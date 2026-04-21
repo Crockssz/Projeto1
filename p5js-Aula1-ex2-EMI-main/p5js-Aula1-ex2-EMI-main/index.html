@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Colorful Typewriter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d0d0d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Space Mono', monospace;
+    }
+    h1 {
+      color: #ffffff22;
+      font-size: 11px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    canvas {
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 0 60px #00000088;
+    }
+  </style>
+</head>
+<body>
+  <a href="../../index.html">
+  <h1>✦ start typing ✦</h1>
+  </a>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script>
+    new p5(function(p) {
+      const COLS = 36;
+      const ROWS = 18;
+      const FONT_SIZE = 22;
+      const PAD_X = 36;
+      const PAD_Y = 36;
+      const LINE_H = 38;
+
+      // Each cell: { char, color, opacity, scale, born }
+      let grid = [[]]; // array of rows, each row = array of cell objects
+      let cursorBlink = 0;
+
+      const PALETTE = [
+        '#FF6B6B', '#FF8E53', '#FFC947', '#A8E063',
+        '#56CCF2', '#6A82FB', '#C471ED', '#F64F59',
+        '#43E97B', '#FA709A', '#FEE140', '#30CFD0',
+        '#F093FB', '#96FBC4', '#FFD26F', '#3DE8F2',
+      ];
+
+      function randColor() {
+        return PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      }
+
+      function currentRow() { return grid[grid.length - 1]; }
+
+      p.setup = function() {
+        let cw = COLS * (FONT_SIZE * 0.65) + PAD_X * 2;
+        let ch = ROWS * LINE_H + PAD_Y * 2;
+        p.createCanvas(cw, ch);
+        p.textFont('Space Mono');
+        p.textSize(FONT_SIZE);
+      };
+
+      p.keyPressed = function() {
+        if (p.keyCode === p.BACKSPACE) {
+          let row = currentRow();
+          if (row.length > 0) {
+            row.pop();
+          } else if (grid.length > 1) {
+            grid.pop();
+          }
+          return false;
+        }
+        if (p.keyCode === p.ENTER) {
+          if (grid.length < ROWS) {
+            grid.push([]);
+          }
+          return false;
+        }
+      };
+
+      p.keyTyped = function() {
+        let row = currentRow();
+        if (row.length < COLS) {
+          row.push({
+            char: p.key,
+            color: randColor(),
+            born: p.millis(),
+            scale: 0,
+          });
+        }
+        return false;
+      };
+
+      p.draw = function() {
+        // Background with subtle scanlines feel
+        p.background(13, 13, 18);
+
+        // Draw faint grid lines
+        p.stroke(255, 255, 255, 8);
+        p.strokeWeight(1);
+        let charW = FONT_SIZE * 0.65;
+        for (let c = 0; c <= COLS; c++) {
+          let x = PAD_X + c * charW;
+          p.line(x, PAD_Y, x, p.height - PAD_Y);
+        }
+        for (let r = 0; r <= ROWS; r++) {
+          let y = PAD_Y + r * LINE_H;
+          p.line(PAD_X, y, p.width - PAD_X, y);
+        }
+
+        cursorBlink = (p.millis() / 500) % 1;
+
+        p.noStroke();
+        p.textFont('Space Mono');
+        p.textSize(FONT_SIZE);
+        p.textStyle(p.NORMAL);
+
+        for (let r = 0; r < grid.length; r++) {
+          let row = grid[r];
+          for (let c = 0; c < row.length; c++) {
+            let cell = row[c];
+            let age = (p.millis() - cell.born) / 150;
+            let sc = p.min(1, age); // 0→1 pop-in
+
+            let x = PAD_X + c * charW + charW * 0.5;
+            let y = PAD_Y + r * LINE_H + LINE_H * 0.72;
+
+            p.push();
+            p.translate(x, y);
+            p.scale(sc);
+
+            // Glow effect
+            let col = p.color(cell.color);
+            p.fill(p.red(col), p.green(col), p.blue(col), 40 * sc);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(FONT_SIZE + 8);
+            p.text(cell.char, 0, 1);
+
+            // Main letter
+            p.fill(p.red(col), p.green(col), p.blue(col), 255 * sc);
+            p.textSize(FONT_SIZE);
+            p.text(cell.char, 0, 0);
+
+            p.pop();
+          }
+
+          // Draw cursor on last row
+          if (r === grid.length - 1) {
+            let cx = PAD_X + row.length * charW;
+            let cy = PAD_Y + r * LINE_H;
+            let alpha = cursorBlink < 0.5 ? 230 : 0;
+            p.fill(255, 255, 255, alpha);
+            p.rect(cx + 3, cy + 6, charW * 0.55, LINE_H - 12, 2);
+          }
+        }
+
+        // Particle burst on new char
+        // (handled by scale animation above — no extra state needed)
+      };
+    });
+  </script>
+</body>
+</html>
