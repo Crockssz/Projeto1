@@ -1,255 +1,316 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gallery Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery Portal</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    :root {
-      --bg: #0a0a0a;
-      --accent-a: #e8ff47;
-      --accent-b: #ff3c6e;
-      --text: #f0f0f0;
-      --muted: #555;
-    }
+      :root {
+        --bg: #0a0a0a;
+        --accent-a: #e8ff47;
+        --accent-b: #ff3c6e;
+        --text: #f0f0f0;
+        --muted: #555;
+      }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-    header {
-      padding: 2rem 3rem;
-      display: flex;
-      align-items: baseline;
-      gap: 1rem;
-      border-bottom: 1px solid #1a1a1a;
-    }
+      header {
+        padding: 2rem 3rem;
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        border-bottom: 1px solid #1a1a1a;
+      }
 
-    header h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.2rem;
-      letter-spacing: 0.06em;
-      color: var(--text);
-    }
+      header h1 {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2.2rem;
+        letter-spacing: 0.06em;
+        color: var(--text);
+      }
 
-    header span {
-      font-size: 0.75rem;
-      color: var(--muted);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
+      header span {
+        font-size: 0.75rem;
+        color: var(--muted);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
 
-    .stage {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-    }
+      .stage {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
 
-    .portal {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 3rem;
-      cursor: pointer;
-      text-decoration: none;
-      overflow: hidden;
-      transition: flex 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+      .portal {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 3rem;
+        cursor: pointer;
+        text-decoration: none;
+        overflow: hidden;
+        transition: flex 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-    .portal:hover { flex: 1.25; }
+      .portal:hover {
+        flex: 1.25;
+      }
 
-    .portal::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--panel-bg);
-      transition: opacity 0.4s;
-      opacity: 1;
-    }
+      .portal::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--panel-bg);
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
 
-    .portal-a {
-      --panel-bg: linear-gradient(160deg, #111 0%, #1a1a0d 100%);
-      border-right: 1px solid #1e1e1e;
-    }
+      .portal-a {
+        --panel-bg: linear-gradient(160deg, #111 0%, #1a1a0d 100%);
+        border-right: 1px solid #1e1e1e;
+      }
 
-    .portal-b {
-      --panel-bg: linear-gradient(160deg, #111 0%, #1a0d11 100%);
-    }
+      .portal-b {
+        --panel-bg: linear-gradient(160deg, #111 0%, #1a0d11 100%);
+      }
 
-    /* animated noise texture */
-    .portal::after {
-      content: '';
-      position: absolute;
-      inset: -50%;
-      width: 200%;
-      height: 200%;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.5;
-      pointer-events: none;
-    }
+      /* animated noise texture */
+      .portal::after {
+        content: "";
+        position: absolute;
+        inset: -50%;
+        width: 200%;
+        height: 200%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        opacity: 0.5;
+        pointer-events: none;
+      }
 
-    .portal-number {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 8rem;
-      line-height: 1;
-      position: absolute;
-      top: 2.5rem;
-      left: 3rem;
-      opacity: 0.07;
-      transition: opacity 0.4s, transform 0.5s cubic-bezier(0.16,1,0.3,1);
-      color: var(--accent);
-    }
+      .portal-number {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 8rem;
+        line-height: 1;
+        position: absolute;
+        top: 2.5rem;
+        left: 3rem;
+        opacity: 0.07;
+        transition:
+          opacity 0.4s,
+          transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--accent);
+      }
 
-    .portal:hover .portal-number {
-      opacity: 0.18;
-      transform: scale(1.05) translateY(-4px);
-    }
+      .portal:hover .portal-number {
+        opacity: 0.18;
+        transform: scale(1.05) translateY(-4px);
+      }
 
-    .portal-a { --accent: var(--accent-a); }
-    .portal-b { --accent: var(--accent-b); }
+      .portal-a {
+        --accent: var(--accent-a);
+      }
+      .portal-b {
+        --accent: var(--accent-b);
+      }
 
-    .portal-tag {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.6rem;
-      position: relative;
-      z-index: 1;
-    }
+      .portal-tag {
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.6rem;
+        position: relative;
+        z-index: 1;
+      }
 
-    .portal-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 3.2rem;
-      letter-spacing: 0.04em;
-      line-height: 1.05;
-      position: relative;
-      z-index: 1;
-      transition: color 0.3s;
-    }
+      .portal-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 3.2rem;
+        letter-spacing: 0.04em;
+        line-height: 1.05;
+        position: relative;
+        z-index: 1;
+        transition: color 0.3s;
+      }
 
-    .portal:hover .portal-title { color: var(--accent); }
+      .portal:hover .portal-title {
+        color: var(--accent);
+      }
 
-    .portal-desc {
-      margin-top: 0.8rem;
-      font-size: 0.82rem;
-      color: var(--muted);
-      max-width: 260px;
-      line-height: 1.6;
-      position: relative;
-      z-index: 1;
-    }
+      .portal-desc {
+        margin-top: 0.8rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+        max-width: 260px;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
+      }
 
-    .portal-arrow {
-      position: absolute;
-      right: 3rem;
-      bottom: 3rem;
-      width: 44px;
-      height: 44px;
-      border: 1px solid var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1;
-      transition: background 0.3s, transform 0.4s cubic-bezier(0.16,1,0.3,1);
-    }
+      .portal-arrow {
+        position: absolute;
+        right: 3rem;
+        bottom: 3rem;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        transition:
+          background 0.3s,
+          transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-    .portal:hover .portal-arrow {
-      background: var(--accent);
-      transform: scale(1.15);
-    }
+      .portal:hover .portal-arrow {
+        background: var(--accent);
+        transform: scale(1.15);
+      }
 
-    .portal-arrow svg { width: 18px; height: 18px; }
-    .portal-arrow svg path { stroke: var(--accent); transition: stroke 0.3s; }
-    .portal:hover .portal-arrow svg path { stroke: #0a0a0a; }
+      .portal-arrow svg {
+        width: 18px;
+        height: 18px;
+      }
+      .portal-arrow svg path {
+        stroke: var(--accent);
+        transition: stroke 0.3s;
+      }
+      .portal:hover .portal-arrow svg path {
+        stroke: #0a0a0a;
+      }
 
-    /* divider line */
-    .divider {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 1px;
-      height: 60%;
-      background: linear-gradient(to bottom, transparent, #2a2a2a 30%, #2a2a2a 70%, transparent);
-      z-index: 10;
-      pointer-events: none;
-    }
+      /* divider line */
+      .divider {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 1px;
+        height: 60%;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          #2a2a2a 30%,
+          #2a2a2a 70%,
+          transparent
+        );
+        z-index: 10;
+        pointer-events: none;
+      }
 
-    .portal-shine {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.03) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
+      .portal-shine {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 30% 60%,
+          rgba(255, 255, 255, 0.03) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
 
-    /* entry animation */
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+      /* entry animation */
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .portal-a .portal-title,
-    .portal-a .portal-tag,
-    .portal-a .portal-desc { animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+      .portal-a .portal-title,
+      .portal-a .portal-tag,
+      .portal-a .portal-desc {
+        animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+      }
 
-    .portal-b .portal-title,
-    .portal-b .portal-tag,
-    .portal-b .portal-desc { animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
-  </style>
-</head>
-<body>
+      .portal-b .portal-title,
+      .portal-b .portal-tag,
+      .portal-b .portal-desc {
+        animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="../../index.html">
+        <h1>Voltar</h1>
+      </a>
+      <h1>Portal</h1>
+      <span>Choose a section</span>
+    </header>
 
-  <header>
-    <a href="../../index.html">
-    <h1>Portal</h1>
-    <span>Choose a section</span>
-    </a>
-  </header>
+    <div class="stage">
+      <a href="./app1/index2.html" class="portal portal-a">
+        <div class="portal-shine"></div>
+        <div class="portal-number">01</div>
+        <div class="portal-tag">Section One</div>
+        <div class="portal-title">Shapes &amp;<br />Geometry</div>
+        <div class="portal-desc">
+          Explore a collection of bold geometric rectangles and layouts.
+        </div>
+        <div class="portal-arrow">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M7 17L17 7M17 7H7M17 7V17"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </a>
 
-  <div class="stage">
+      <a href="./app2/index3.html" class="portal portal-b">
+        <div class="portal-shine"></div>
+        <div class="portal-number">02</div>
+        <div class="portal-tag">Section Two</div>
+        <div class="portal-title">Color &amp;<br />Pattern</div>
+        <div class="portal-desc">
+          A vivid grid of color-blocked rectangles in dynamic arrangements.
+        </div>
+        <div class="portal-arrow">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M7 17L17 7M17 7H7M17 7V17"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </a>
 
-    <a href="./app1/index2.html" class="portal portal-a">
-      <div class="portal-shine"></div>
-      <div class="portal-number">01</div>
-      <div class="portal-tag">Section One</div>
-      <div class="portal-title">Shapes &amp;<br>Geometry</div>
-      <div class="portal-desc">Explore a collection of bold geometric rectangles and layouts.</div>
-      <div class="portal-arrow">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M7 17L17 7M17 7H7M17 7V17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-    </a>
-
-    <a href="./app2/index3.html" class="portal portal-b">
-      <div class="portal-shine"></div>
-      <div class="portal-number">02</div>
-      <div class="portal-tag">Section Two</div>
-      <div class="portal-title">Color &amp;<br>Pattern</div>
-      <div class="portal-desc">A vivid grid of color-blocked rectangles in dynamic arrangements.</div>
-      <div class="portal-arrow">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M7 17L17 7M17 7H7M17 7V17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-    </a>
-
-    <div class="divider"></div>
-  </div>
-
-</body>
+      <div class="divider"></div>
+    </div>
+  </body>
 </html>

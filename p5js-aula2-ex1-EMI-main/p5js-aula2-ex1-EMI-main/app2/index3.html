@@ -60,7 +60,6 @@
       margin-bottom: 4rem;
     }
 
-    /* Masonry-like bento grid */
     .bento {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -72,14 +71,7 @@
       border-radius: 6px;
       position: relative;
       overflow: hidden;
-      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s;
-      cursor: default;
-    }
-
-    .tile:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
-      z-index: 2;
+      cursor: pointer;
     }
 
     .tile-label {
@@ -89,98 +81,192 @@
       letter-spacing: 0.18em;
       text-transform: uppercase;
       font-weight: 500;
+      z-index: 3;
+      transition: opacity 0.3s;
     }
 
-    /* Row 1 */
-    .t1 { grid-column: 1/3; grid-row: 1; background: var(--accent); }
-    .t1 .tile-label { color: rgba(255,255,255,0.6); }
-
-    .t2 { grid-column: 3/5; grid-row: 1; background: #0a0a0a; }
-    .t2 .tile-label { color: rgba(255,255,255,0.3); }
-
-    .t3 { grid-column: 5/7; grid-row: 1; background: #ffe04a; }
-    .t3 .tile-label { color: rgba(0,0,0,0.4); }
-
-    /* Row 2 */
-    .t4 { grid-column: 1/2; grid-row: 2; background: #f5f0eb; border: 1px solid #ddd; }
-    .t4 .tile-label { color: #bbb; }
-
-    .t5 { grid-column: 2/4; grid-row: 2; background: #ff7b54; }
-    .t5 .tile-label { color: rgba(255,255,255,0.6); }
-
-    .t6 { grid-column: 4/7; grid-row: 2; background: #0a0a0a; }
-    .t6 .tile-label { color: rgba(255,255,255,0.25); }
-
-    /* Row 3 */
-    .t7 { grid-column: 1/4; grid-row: 3; background: #d4efe8; }
-    .t7 .tile-label { color: rgba(0,0,0,0.35); }
-
-    .t8 { grid-column: 4/6; grid-row: 3; background: var(--accent); }
-    .t8 .tile-label { color: rgba(255,255,255,0.6); }
-
-    .t9 { grid-column: 6/7; grid-row: 3; background: #ffe04a; }
-    .t9 .tile-label { color: rgba(0,0,0,0.4); }
-
-    /* Row 4 */
+    /* grid placements */
+    .t1  { grid-column: 1/3; grid-row: 1; background: var(--accent); }
+    .t1  .tile-label { color: rgba(255,255,255,0.6); }
+    .t2  { grid-column: 3/5; grid-row: 1; background: #0a0a0a; }
+    .t2  .tile-label { color: rgba(255,255,255,0.3); }
+    .t3  { grid-column: 5/7; grid-row: 1; background: #ffe04a; }
+    .t3  .tile-label { color: rgba(0,0,0,0.4); }
+    .t4  { grid-column: 1/2; grid-row: 2; background: repeating-linear-gradient(45deg,#f5f0eb,#f5f0eb 4px,#eae5e0 4px,#eae5e0 8px); border: 1px solid #ddd; }
+    .t4  .tile-label { color: #bbb; }
+    .t5  { grid-column: 2/4; grid-row: 2; background: #ff7b54; }
+    .t5  .tile-label { color: rgba(255,255,255,0.6); }
+    .t6  { grid-column: 4/7; grid-row: 2; background: #0a0a0a; }
+    .t6  .tile-label { color: rgba(255,255,255,0.25); }
+    .t7  { grid-column: 1/4; grid-row: 3; background: #d4efe8; }
+    .t7  .tile-label { color: rgba(0,0,0,0.35); }
+    .t8  { grid-column: 4/6; grid-row: 3; background: var(--accent); }
+    .t8  .tile-label { color: rgba(255,255,255,0.6); }
+    .t9  { grid-column: 6/7; grid-row: 3; background: #ffe04a; }
+    .t9  .tile-label { color: rgba(0,0,0,0.4); }
     .t10 { grid-column: 1/2; grid-row: 4; background: #0a0a0a; }
     .t10 .tile-label { color: rgba(255,255,255,0.25); }
-
     .t11 { grid-column: 2/5; grid-row: 4; background: #f5f0eb; border: 2px solid var(--accent); }
     .t11 .tile-label { color: var(--accent); }
-
     .t12 { grid-column: 5/7; grid-row: 4; background: #ff3c6e; }
     .t12 .tile-label { color: rgba(255,255,255,0.5); }
 
-    /* Inner decorative elements */
-    .t2::after {
-      content: '';
+    /* ── T1 — ripple ao clicar ── */
+    .t1-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transform: scale(0);
+      pointer-events: none;
+      animation: ripple .7s ease-out forwards;
+    }
+    @keyframes ripple { to { transform: scale(5); opacity: 0; } }
+
+    /* ── T2 — círculo expande ao hover ── */
+    .t2-circle {
       position: absolute;
       top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
+      transform: translate(-50%,-50%) scale(1);
       width: 40px; height: 40px;
       background: rgba(255,60,110,0.3);
       border-radius: 50%;
+      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), background 0.4s;
+      pointer-events: none;
+    }
+    .t2:hover .t2-circle {
+      transform: translate(-50%,-50%) scale(6);
+      background: rgba(255,60,110,0.12);
     }
 
-    .t6::before {
-      content: '';
+    /* ── T3 — rotação ao clicar ── */
+    .t3 { transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .t3.spin { animation: tileRotate 0.6s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes tileRotate {
+      0%   { transform: rotate(0deg) scale(1); }
+      40%  { transform: rotate(8deg) scale(0.95); }
+      70%  { transform: rotate(-4deg) scale(1.02); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    /* ── T4 — padrão muda de ângulo ao hover ── */
+    .t4 {
+      background: repeating-linear-gradient(45deg,#f5f0eb,#f5f0eb 4px,#eae5e0 4px,#eae5e0 8px);
+      transition: background 0.5s;
+    }
+    .t4:hover {
+      background: repeating-linear-gradient(135deg,#f5f0eb,#f5f0eb 4px,#d8b4b4 4px,#d8b4b4 8px);
+    }
+
+    /* ── T5 — brilho diagonal ao hover ── */
+    .t5-shine {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+    .t5:hover .t5-shine { transform: translateX(130%); }
+
+    /* ── T6 — losango roda ao hover ── */
+    .t6-diamond {
       position: absolute;
       right: 1.5rem; top: 50%;
-      transform: translateY(-50%);
+      transform: translateY(-50%) rotate(45deg);
       width: 36px; height: 36px;
       border: 2px solid rgba(255,224,74,0.25);
       border-radius: 2px;
-      rotate: 45deg;
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1), border-color 0.4s, width 0.4s, height 0.4s;
+      pointer-events: none;
+    }
+    .t6:hover .t6-diamond {
+      transform: translateY(-50%) rotate(225deg);
+      border-color: rgba(255,224,74,0.7);
+      width: 48px; height: 48px;
     }
 
-    .t7::after {
-      content: '';
+    /* ── T7 — linha desliza ao hover ── */
+    .t7-line {
       position: absolute;
       right: 2rem; bottom: 1.5rem;
-      width: 80px; height: 3px;
-      background: rgba(0,0,0,0.12);
+      width: 0;
+      height: 3px;
+      background: rgba(0,0,0,0.2);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+    .t7:hover .t7-line { width: 80px; }
+    .t7 { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t7:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.18); }
+
+    /* ── T8 — pulso ao clicar ── */
+    .t8.pulse { animation: tPulse 0.5s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes tPulse {
+      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,60,110,0.5); }
+      40%  { transform: scale(0.93); }
+      70%  { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(255,60,110,0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,60,110,0); }
     }
 
-    .t11::before {
-      content: '→';
+    /* ── T9 — encolhe ao hover ── */
+    .t9 { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t9:hover { transform: scale(0.88); box-shadow: 0 0 0 3px rgba(255,60,110,0.4); }
+
+    /* ── T10 — grelha aparece ao hover ── */
+    .t10-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px;
+      position: absolute;
+      inset: 12px;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .t10:hover .t10-grid { opacity: 1; }
+    .t10-cell { background: rgba(255,224,74,0.12); border-radius: 2px; }
+    .t10 { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t10:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.18); }
+
+    /* ── T11 — seta desloca ao hover ── */
+    .t11-arrow {
       position: absolute;
       right: 1.5rem; top: 50%;
-      transform: translateY(-50%);
+      transform: translateY(-50%) translateX(0);
       color: var(--accent);
       font-size: 1.4rem;
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s;
+      pointer-events: none;
+    }
+    .t11:hover .t11-arrow {
+      transform: translateY(-50%) translateX(6px);
+    }
+    .t11 { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t11:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.14); }
+
+    /* ── T12 — inverte cor ao clicar ── */
+    .t12 { transition: background 0.5s, transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t12:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.18); }
+    .t12.inverted { background: #0a0a0a; }
+    .t12.inverted .tile-label { color: rgba(255,60,110,0.7); }
+
+    /* ── barra de hover genérica (tiles sem interação especial de hover lift) ── */
+    .t1, .t2, .t3, .t6, .t8, .t9 {
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s;
+    }
+    .t1:hover, .t2:hover, .t3:hover, .t6:hover, .t8:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+      z-index: 2;
     }
 
-    /* stripe pattern on t4 */
-    .t4 {
-      background: repeating-linear-gradient(
-        45deg,
-        #f5f0eb,
-        #f5f0eb 4px,
-        #eae5e0 4px,
-        #eae5e0 8px
-      );
-    }
+    /* ── T4 hover lift ── */
+    .t4 { transition: background 0.5s, transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t4:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.1); }
+    .t5 { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s; }
+    .t5:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 24px 60px rgba(0,0,0,0.18); z-index:2; }
 
+    /* ── fade-in inicial ── */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(15px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -213,19 +299,123 @@
   <p class="subtitle">A vivid bento of color-blocked rectangles</p>
 
   <div class="bento">
-    <div class="tile t1"><span class="tile-label">Vivid 01</span></div>
-    <div class="tile t2"><span class="tile-label">Vivid 02</span></div>
-    <div class="tile t3"><span class="tile-label">Vivid 03</span></div>
-    <div class="tile t4"><span class="tile-label">Vivid 04</span></div>
-    <div class="tile t5"><span class="tile-label">Vivid 05</span></div>
-    <div class="tile t6"><span class="tile-label">Vivid 06</span></div>
-    <div class="tile t7"><span class="tile-label">Vivid 07</span></div>
-    <div class="tile t8"><span class="tile-label">Vivid 08</span></div>
-    <div class="tile t9"><span class="tile-label">Vivid 09</span></div>
-    <div class="tile t10"><span class="tile-label">Vivid 10</span></div>
-    <div class="tile t11"><span class="tile-label">Vivid 11</span></div>
-    <div class="tile t12"><span class="tile-label">Vivid 12</span></div>
+
+    <!-- T1 — ripple ao clicar -->
+    <div class="tile t1" id="t1">
+      <span class="tile-label">Vivid 01</span>
+    </div>
+
+    <!-- T2 — círculo expande ao hover -->
+    <div class="tile t2">
+      <div class="t2-circle"></div>
+      <span class="tile-label">Vivid 02</span>
+    </div>
+
+    <!-- T3 — treme ao clicar -->
+    <div class="tile t3" id="t3">
+      <span class="tile-label">Vivid 03</span>
+    </div>
+
+    <!-- T4 — padrão muda de ângulo ao hover -->
+    <div class="tile t4">
+      <span class="tile-label">Vivid 04</span>
+    </div>
+
+    <!-- T5 — brilho diagonal ao hover -->
+    <div class="tile t5">
+      <div class="t5-shine"></div>
+      <span class="tile-label">Vivid 05</span>
+    </div>
+
+    <!-- T6 — losango roda ao hover -->
+    <div class="tile t6">
+      <div class="t6-diamond"></div>
+      <span class="tile-label">Vivid 06</span>
+    </div>
+
+    <!-- T7 — linha desliza ao hover -->
+    <div class="tile t7">
+      <div class="t7-line"></div>
+      <span class="tile-label">Vivid 07</span>
+    </div>
+
+    <!-- T8 — pulso ao clicar -->
+    <div class="tile t8" id="t8">
+      <span class="tile-label">Vivid 08</span>
+    </div>
+
+    <!-- T9 — encolhe ao hover -->
+    <div class="tile t9">
+      <span class="tile-label">Vivid 09</span>
+    </div>
+
+    <!-- T10 — grelha aparece ao hover -->
+    <div class="tile t10">
+      <div class="t10-grid" id="t10grid"></div>
+      <span class="tile-label">Vivid 10</span>
+    </div>
+
+    <!-- T11 — seta desloca ao hover -->
+    <div class="tile t11">
+      <div class="t11-arrow">→</div>
+      <span class="tile-label">Vivid 11</span>
+    </div>
+
+    <!-- T12 — inverte cor ao clicar -->
+    <div class="tile t12" id="t12">
+      <span class="tile-label">Vivid 12</span>
+    </div>
+
   </div>
+
+  <script>
+    // T1 — ripple ao clicar
+    document.getElementById('t1').addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const r = document.createElement('div');
+      r.className = 't1-ripple';
+      const size = Math.max(rect.width, rect.height) * 2;
+      r.style.cssText = `width:${size}px;height:${size}px;left:${x - size/2}px;top:${y - size/2}px;position:absolute;`;
+      this.appendChild(r);
+      setTimeout(() => r.remove(), 800);
+    });
+
+    // T3 — treme ao clicar
+    const t3 = document.getElementById('t3');
+    t3.addEventListener('click', () => {
+      t3.classList.remove('spin');
+      void t3.offsetWidth;
+      t3.classList.add('spin');
+    });
+    t3.addEventListener('animationend', () => t3.classList.remove('spin'));
+
+    // T8 — pulso ao clicar
+    const t8 = document.getElementById('t8');
+    t8.addEventListener('click', () => {
+      t8.classList.remove('pulse');
+      void t8.offsetWidth;
+      t8.classList.add('pulse');
+    });
+    t8.addEventListener('animationend', () => t8.classList.remove('pulse'));
+
+    // T10 — gerar células da grelha
+    const t10grid = document.getElementById('t10grid');
+    for (let i = 0; i < 4; i++) {
+      const c = document.createElement('div');
+      c.className = 't10-cell';
+      t10grid.appendChild(c);
+    }
+
+    // T12 — inverter cor ao clicar
+    const t12 = document.getElementById('t12');
+    let t12inv = false;
+    t12.addEventListener('click', () => {
+      t12inv = !t12inv;
+      t12.classList.toggle('inverted', t12inv);
+    });
+  </script>
 
 </body>
 </html>
