@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard 2 – PokéCanvas</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060610;--surface:#0e0e1c;--border:#1a1a2e;
+  --accent:#06b6d4;--purple:#7c3aed;--warm:#f59e0b;
+  --text:#e0e0f0;--muted:#6060a0;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:#060610ee;backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:.75rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{font-weight:800;font-size:1rem;letter-spacing:-.02em}
+.nav-brand span{color:var(--purple)}
+.nav-back{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);text-decoration:none}
+.nav-back:hover{color:var(--text)}
+.nav-tag{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--warm);background:#f59e0b15;border:1px solid #f59e0b30;border-radius:999px;padding:.2rem .7rem}
+
+main{
+  padding-top:60px;
+  display:grid;
+  grid-template-columns:320px 1fr;
+  min-height:100vh;
+}
+@media(max-width:800px){
+  main{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+}
+
+aside{
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  padding:1.5rem;
+  display:flex;flex-direction:column;gap:1.2rem;
+  overflow-y:auto;
+  max-height:calc(100vh - 60px);
+  position:sticky;top:60px;
+}
+
+.panel-title{font-size:1.3rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.panel-sub{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:.4rem;line-height:1.6}
+.sep{height:1px;background:var(--border);flex-shrink:0}
+.section-label{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.7rem}
+
+.input-row{display:flex;gap:.5rem}
+input[type=text]{
+  flex:1;background:#ffffff08;border:1px solid var(--border);
+  color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;
+  padding:.5rem .8rem;border-radius:8px;outline:none;transition:border-color .2s;
+}
+input[type=text]:focus{border-color:var(--accent)}
+input[type=text]::placeholder{color:var(--muted)}
+
+button{
+  font-family:'Space Mono',monospace;font-size:.72rem;
+  padding:.5rem 1rem;border-radius:8px;cursor:pointer;
+  transition:all .15s;border:1px solid;white-space:nowrap;
+}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
+.btn-primary:hover{filter:brightness(1.2)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost.active{border-color:var(--purple);color:var(--purple);background:#7c3aed18}
+
+.random-row{display:flex;gap:.5rem;flex-wrap:wrap}
+
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.filter-btn{font-family:'Space Mono',monospace;font-size:.65rem;padding:.45rem .5rem;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-align:center}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+.filter-btn.active{border-color:var(--purple);color:var(--purple);background:#7c3aed18}
+
+.slider-group{display:flex;flex-direction:column;gap:.8rem}
+.slider-row{display:flex;flex-direction:column;gap:.35rem}
+.slider-row label{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted)}
+.slider-row label span{color:var(--text)}
+input[type=range]{width:100%;cursor:pointer;accent-color:var(--accent)}
+
+/* Poke info */
+.poke-card{background:#ffffff06;border:1px solid var(--border);border-radius:10px;padding:1rem;display:none}
+.poke-header{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem}
+.poke-num{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted)}
+.poke-name{font-size:1.1rem;font-weight:800;text-transform:capitalize;letter-spacing:-.01em}
+.poke-types{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.8rem}
+.type-badge{font-family:'Space Mono',monospace;font-size:.58rem;padding:.2rem .55rem;border-radius:999px;border:1px solid;text-transform:uppercase;letter-spacing:.06em}
+.stat-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.stat-name{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);width:38px;flex-shrink:0}
+.stat-bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.stat-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.stat-val{font-family:'Space Mono',monospace;font-size:.62rem;width:26px;text-align:right}
+
+/* Canvas area */
+#canvas-area{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#050510;position:relative;overflow:hidden;
+  min-height:calc(100vh - 60px);
+}
+
+#canvas-wrap{position:relative;display:none}
+canvas#main-canvas{display:block;cursor:crosshair}
+
+.canvas-hud{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);
+  background:#060610dd;border:1px solid var(--border);
+  padding:.4rem .9rem;border-radius:7px;white-space:nowrap;pointer-events:none;
+}
+
+#empty-state{
+  text-align:center;
+  font-family:'Space Mono',monospace;
+  color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:1rem;
+}
+.empty-icon{font-size:3rem;opacity:.3}
+.empty-text{font-size:.75rem;line-height:1.8}
+
+.status-bar{
+  font-family:'Space Mono',monospace;font-size:.7rem;
+  color:var(--accent);margin-top:.5rem;min-height:1.2em;
+  animation:blink .9s infinite alternate;
+}
+@keyframes blink{from{opacity:.4}to{opacity:1}}
+.status-bar.err{color:#f97316;animation:none}
+.status-bar.ok{color:#22c55e;animation:none}
+
+.api-note{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);line-height:1.8}
+.api-note strong{color:var(--text);font-weight:400}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">My<span>Dash</span>boards</div>
+  <div class="nav-tag">Dashboard 2 · Interativo</div>
+  <a href="index.html" class="nav-back">← voltar</a>
+</nav>
+
+<main>
+  <!-- SIDEBAR -->
+  <aside>
+    <div>
+      <div class="panel-title">PokéCanvas</div>
+      <div class="panel-sub">// pesquisa um Pokémon via API e manipula os píxeis com Canvas 2D</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Search -->
+    <div>
+      <div class="section-label">Pesquisar Pokémon</div>
+      <div class="input-row">
+        <input type="text" id="poke-input" placeholder="nome ou nº (ex: pikachu)" value="charizard"/>
+        <button class="btn-primary" id="load-btn" onclick="loadPokemon()">→</button>
+      </div>
+      <div class="random-row" style="margin-top:.6rem">
+        <button class="btn-ghost" onclick="randomPoke()">🎲 Aleatório</button>
+        <button class="btn-ghost" id="shiny-btn" onclick="toggleShiny()">✨ Shiny</button>
+      </div>
+      <div class="status-bar" id="status-bar"></div>
+    </div>
+
+    <!-- Poke info card -->
+    <div class="poke-card" id="poke-card">
+      <div class="poke-header">
+        <div>
+          <div class="poke-num" id="poke-num">#000</div>
+          <div class="poke-name" id="poke-name">—</div>
+        </div>
+      </div>
+      <div class="poke-types" id="poke-types"></div>
+      <div id="poke-stats"></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Filters -->
+    <div>
+      <div class="section-label">Filtros de Pós-Processamento</div>
+      <div class="filter-grid" id="filter-grid">
+        <button class="filter-btn active" data-filter="none"    onclick="setFilter('none',this)">Original</button>
+        <button class="filter-btn"        data-filter="glitch"  onclick="setFilter('glitch',this)">Glitch</button>
+        <button class="filter-btn"        data-filter="pixel"   onclick="setFilter('pixel',this)">Pixelate</button>
+        <button class="filter-btn"        data-filter="neon"    onclick="setFilter('neon',this)">Neon</button>
+        <button class="filter-btn"        data-filter="thermal" onclick="setFilter('thermal',this)">Térmico</button>
+        <button class="filter-btn"        data-filter="invert"  onclick="setFilter('invert',this)">Inverter</button>
+        <button class="filter-btn"        data-filter="gray"    onclick="setFilter('gray',this)">Grayscale</button>
+        <button class="filter-btn"        data-filter="matrix"  onclick="setFilter('matrix',this)">Matrix</button>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Sliders -->
+    <div>
+      <div class="section-label">Controlos</div>
+      <div class="slider-group">
+        <div class="slider-row">
+          <label>Intensidade <span id="lbl-intensity">50%</span></label>
+          <input type="range" id="sl-intensity" min="0" max="100" value="50"
+            oninput="document.getElementById('lbl-intensity').textContent=this.value+'%';redraw()"/>
+        </div>
+        <div class="slider-row">
+          <label>Zoom <span id="lbl-zoom">1.8×</span></label>
+          <input type="range" id="sl-zoom" min="1" max="4" value="1.8" step="0.1"
+            oninput="document.getElementById('lbl-zoom').textContent=parseFloat(this.value).toFixed(1)+'×';redraw()"/>
+        </div>
+        <div class="slider-row">
+          <label>Rotação <span id="lbl-rot">0°</span></label>
+          <input type="range" id="sl-rot" min="0" max="360" value="0"
+            oninput="document.getElementById('lbl-rot').textContent=this.value+'°';redraw()"/>
+        </div>
+        <div class="slider-row">
+          <label>Brilho fundo <span id="lbl-bg">8</span></label>
+          <input type="range" id="sl-bg" min="0" max="60" value="8"
+            oninput="document.getElementById('lbl-bg').textContent=this.value;redraw()"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="api-note">
+      <strong>API utilizada</strong><br>
+      pokeapi.co · gratuita · sem autenticação<br>
+      Endpoint: /api/v2/pokemon/{nome}<br>
+      Sprites: oficial + shiny variant
+    </div>
+  </aside>
+
+  <!-- CANVAS AREA -->
+  <div id="canvas-area">
+    <div id="empty-state">
+      <div class="empty-icon">◎</div>
+      <div class="empty-text">← Carrega um Pokémon para começar<br>usa os filtros para manipular os píxeis</div>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="main-canvas"></canvas>
+      <div class="canvas-hud" id="hud">move o rato · clica para glitch extra</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────
+const state = {
+  filter: 'none',
+  shiny: false,
+  spriteNormal: null,
+  spriteShiny: null,
+  imgEl: null,         // native <img> element – no CORS issues for display
+  imgData: null,       // ImageData from offscreen canvas for pixel manipulation
+  mouseX: 0, mouseY: 0,
+  mouseDown: false,
+  animId: null
+};
+
+const TYPE_COLORS = {
+  fire:'#f97316',water:'#06b6d4',grass:'#22c55e',electric:'#f59e0b',
+  psychic:'#ec4899',ghost:'#7c3aed',dragon:'#6366f1',dark:'#94a3b8',
+  normal:'#9ca3af',fighting:'#dc2626',flying:'#7dd3fc',poison:'#a855f7',
+  ground:'#d97706',rock:'#78716c',bug:'#65a30d',steel:'#cbd5e1',
+  ice:'#67e8f9',fairy:'#f9a8d4'
+};
+
+// ── UI helpers ───────────────────────────────────────────────────────
+function setStatus(msg, type='loading') {
+  const el = document.getElementById('status-bar');
+  el.textContent = msg;
+  el.className = 'status-bar' + (type==='err'?' err': type==='ok'?' ok':'');
+}
+function setFilter(name, btn) {
+  state.filter = name;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  redraw();
+}
+function randomPoke() {
+  document.getElementById('poke-input').value = Math.floor(Math.random()*898)+1;
+  loadPokemon();
+}
+function toggleShiny() {
+  state.shiny = !state.shiny;
+  document.getElementById('shiny-btn').classList.toggle('active', state.shiny);
+  if(state.imgEl) applySprite(state.shiny ? state.spriteShiny : state.spriteNormal);
+}
+
+// ── Load Pokémon ─────────────────────────────────────────────────────
+async function loadPokemon() {
+  const input = document.getElementById('poke-input').value.trim().toLowerCase();
+  if(!input) return;
+  document.getElementById('load-btn').disabled = true;
+  setStatus('A contactar PokéAPI...');
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${input}`);
+    if(!res.ok) throw new Error('Pokémon não encontrado — verifica o nome ou número');
+    const data = await res.json();
+
+    // Sprites — prefer official artwork, fallback to front sprite
+    const sp = data.sprites;
+    state.spriteNormal = sp.other?.['official-artwork']?.front_default || sp.front_default;
+    state.spriteShiny  = sp.other?.['official-artwork']?.front_shiny  || sp.front_shiny || state.spriteNormal;
+
+    // Info panel
+    document.getElementById('poke-num').textContent  = `#${String(data.id).padStart(3,'0')}`;
+    document.getElementById('poke-name').textContent = data.name;
+
+    const typesEl = document.getElementById('poke-types');
+    typesEl.innerHTML = data.types.map(t=>{
+      const c = TYPE_COLORS[t.type.name]||'#888';
+      return `<span class="type-badge" style="border-color:${c};color:${c}">${t.type.name}</span>`;
+    }).join('');
+
+    const sMap={hp:'HP',attack:'ATK',defense:'DEF','special-attack':'SpA','special-defense':'SpD',speed:'VEL'};
+    document.getElementById('poke-stats').innerHTML = data.stats.map(s=>{
+      const pct=Math.min(100,Math.round(s.base_stat/255*100));
+      return `<div class="stat-row">
+        <span class="stat-name">${sMap[s.stat.name]||s.stat.name}</span>
+        <div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>
+        <span class="stat-val">${s.base_stat}</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('poke-card').style.display = 'block';
+    setStatus('A carregar sprite...');
+
+    // Load sprite
+    const url = state.shiny ? state.spriteShiny : state.spriteNormal;
+    await applySprite(url);
+    setStatus(`${data.name} carregado!`, 'ok');
+  } catch(e) {
+    setStatus(e.message, 'err');
+  }
+  document.getElementById('load-btn').disabled = false;
+}
+
+// ── Load sprite into image element ───────────────────────────────────
+function applySprite(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      state.imgEl = img;
+      // Cache raw pixel data from offscreen canvas
+      const off = document.createElement('canvas');
+      off.width = img.naturalWidth;
+      off.height = img.naturalHeight;
+      const octx = off.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      try {
+        state.imgData = octx.getImageData(0, 0, off.width, off.height);
+      } catch(e) {
+        // CORS tainted — pixel ops unavailable, fallback to direct draw
+        state.imgData = null;
+      }
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('canvas-wrap').style.display = 'block';
+      redraw();
+      resolve();
+    };
+    img.onerror = () => {
+      // If crossOrigin blocked, retry without it (no pixel manipulation)
+      if(img.crossOrigin) {
+        const img2 = new Image();
+        img2.onload = () => { state.imgEl=img2; state.imgData=null; redraw(); resolve(); };
+        img2.onerror = reject;
+        img2.src = url;
+      } else reject(new Error('Erro ao carregar a imagem'));
+    };
+    img.src = url;
+  });
+}
+
+// ── Main draw ────────────────────────────────────────────────────────
+function redraw() {
+  if(!state.imgEl) return;
+  if(state.animId) cancelAnimationFrame(state.animId);
+  state.animId = requestAnimationFrame(drawFrame);
+}
+
+function drawFrame() {
+  const canvas = document.getElementById('main-canvas');
+  const wrap   = document.getElementById('canvas-area');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const ctx  = canvas.getContext('2d');
+  const bgV  = parseInt(document.getElementById('sl-bg').value);
+  ctx.fillStyle = `rgb(${bgV},${bgV},Math.round(bgV*1.6))`;
+  ctx.fillStyle = `rgb(${bgV},${bgV},${Math.round(bgV*2.5)})`;
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines (subtle)
+  ctx.strokeStyle = `rgba(100,80,200,0.06)`;
+  ctx.lineWidth = 1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  const zoom    = parseFloat(document.getElementById('sl-zoom').value);
+  const rotDeg  = parseFloat(document.getElementById('sl-rot').value);
+  const intensity = parseInt(document.getElementById('sl-intensity').value)/100;
+  const filter  = state.filter;
+  const img     = state.imgEl;
+  const iw      = img.naturalWidth;
+  const ih      = img.naturalHeight;
+  const dw      = iw * zoom;
+  const dh      = ih * zoom;
+
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.rotate(rotDeg * Math.PI/180);
+
+  // Mouse-based wobble
+  const mx = (state.mouseX - W/2) / W;
+  const my = (state.mouseY - H/2) / H;
+  if(filter !== 'none') {
+    ctx.translate(mx * intensity * 20, my * intensity * 14);
+  }
+
+  if(filter === 'none' || !state.imgData) {
+    // Direct draw — always works even if CORS tainted
+    ctx.drawImage(img, -dw/2, -dh/2, dw, dh);
+
+  } else {
+    // Pixel manipulation via offscreen canvas
+    const off  = document.createElement('canvas');
+    off.width  = iw;
+    off.height = ih;
+    const octx = off.getContext('2d');
+    // Copy original pixel data
+    const src  = state.imgData;
+    const work = new ImageData(new Uint8ClampedArray(src.data), iw, ih);
+    const px   = work.data;
+
+    if(filter === 'glitch') {
+      const sliceH = Math.max(2, Math.floor(4 + intensity * 12));
+      for(let y=0; y<ih; y+=sliceH) {
+        const shift = Math.floor((Math.random()-.5) * intensity * (state.mouseDown ? 90 : 35));
+        for(let dy=0; dy<sliceH && y+dy<ih; dy++) {
+          for(let x=0; x<iw; x++) {
+            const sx = ((x+shift)%iw+iw)%iw;
+            const i4 = (( y+dy)*iw+x )*4;
+            const s4 = (( y+dy)*iw+sx)*4;
+            px[i4]  = src.data[s4];
+            px[i4+1]= src.data[s4+1];
+            px[i4+2]= src.data[s4+2];
+            px[i4+3]= src.data[s4+3];
+          }
+        }
+      }
+      // Chromatic aberration
+      const ab = Math.floor(intensity * 14 * (state.mouseDown ? 2.5 : 1));
+      if(ab > 0) {
+        const tmp = new Uint8ClampedArray(px);
+        for(let y=0; y<ih; y++) {
+          for(let x=0; x<iw; x++) {
+            const i4 = (y*iw+x)*4;
+            const rx = Math.min(iw-1, x+ab);
+            const bx = Math.max(0,    x-ab);
+            px[i4]   = tmp[(y*iw+rx)*4];
+            px[i4+2] = tmp[(y*iw+bx)*4+2];
+          }
+        }
+      }
+
+    } else if(filter === 'pixel') {
+      const sz = Math.max(2, Math.floor(2 + intensity * 20));
+      for(let y=0; y<ih; y+=sz) {
+        for(let x=0; x<iw; x+=sz) {
+          let r=0,g=0,b=0,a=0,c=0;
+          for(let dy=0;dy<sz&&y+dy<ih;dy++) for(let dx=0;dx<sz&&x+dx<iw;dx++) {
+            const i4=((y+dy)*iw+(x+dx))*4;
+            r+=src.data[i4];g+=src.data[i4+1];b+=src.data[i4+2];a+=src.data[i4+3];c++;
+          }
+          r=Math.round(r/c);g=Math.round(g/c);b=Math.round(b/c);a=Math.round(a/c);
+          for(let dy=0;dy<sz&&y+dy<ih;dy++) for(let dx=0;dx<sz&&x+dx<iw;dx++) {
+            const i4=((y+dy)*iw+(x+dx))*4;
+            px[i4]=r;px[i4+1]=g;px[i4+2]=b;px[i4+3]=a;
+          }
+        }
+      }
+
+    } else if(filter === 'neon') {
+      for(let i=0; i<px.length; i+=4) {
+        if(px[i+3]<10) continue;
+        const f = 1 + intensity * 2.5;
+        px[i]   = Math.min(255, Math.round(src.data[i]   * f));
+        px[i+1] = Math.min(255, Math.round(src.data[i+1] * 0.25 * f));
+        px[i+2] = Math.min(255, Math.round(src.data[i+2] * f));
+      }
+
+    } else if(filter === 'thermal') {
+      for(let i=0; i<px.length; i+=4) {
+        if(src.data[i+3] < 10) { px[i+3]=0; continue; }
+        const lum = (0.299*src.data[i] + 0.587*src.data[i+1] + 0.114*src.data[i+2])/255;
+        const t = lum;
+        px[i]   = Math.min(255, Math.round(lerp(0,255, t*1.6)));
+        px[i+1] = Math.min(255, Math.round(lerp(0,220, Math.max(0,(t-.25)*1.8))));
+        px[i+2] = Math.min(255, Math.round(lerp(220,0, t)));
+        px[i+3] = src.data[i+3];
+      }
+
+    } else if(filter === 'invert') {
+      for(let i=0; i<px.length; i+=4) {
+        if(src.data[i+3]<10) continue;
+        px[i]   = Math.round(lerp(src.data[i],   255-src.data[i],   intensity));
+        px[i+1] = Math.round(lerp(src.data[i+1], 255-src.data[i+1], intensity));
+        px[i+2] = Math.round(lerp(src.data[i+2], 255-src.data[i+2], intensity));
+      }
+
+    } else if(filter === 'gray') {
+      for(let i=0; i<px.length; i+=4) {
+        if(src.data[i+3]<10) continue;
+        const lum = Math.round(0.299*src.data[i]+0.587*src.data[i+1]+0.114*src.data[i+2]);
+        px[i]   = Math.round(lerp(src.data[i],   lum, intensity));
+        px[i+1] = Math.round(lerp(src.data[i+1], lum, intensity));
+        px[i+2] = Math.round(lerp(src.data[i+2], lum, intensity));
+      }
+
+    } else if(filter === 'matrix') {
+      for(let i=0; i<px.length; i+=4) {
+        if(src.data[i+3]<10) { px[i+3]=0; continue; }
+        const lum = 0.299*src.data[i]+0.587*src.data[i+1]+0.114*src.data[i+2];
+        const on  = lum > 128;
+        const gv  = on ? Math.round(lerp(0, 200, intensity)) : 0;
+        px[i]=0; px[i+1]=gv; px[i+2]=0; px[i+3]=src.data[i+3];
+      }
+    }
+
+    octx.putImageData(work, 0, 0);
+    ctx.drawImage(off, -dw/2, -dh/2, dw, dh);
+  }
+
+  ctx.restore();
+
+  // Scanlines overlay
+  if(filter !== 'none' && intensity > 0.1) {
+    ctx.save();
+    for(let y=0; y<H; y+=3) {
+      ctx.fillStyle = `rgba(0,0,0,${0.12 * intensity})`;
+      ctx.fillRect(0, y, W, 1);
+    }
+    ctx.restore();
+  }
+
+  // Particle noise overlay for glitch/matrix
+  if((filter==='glitch'||filter==='matrix') && intensity>0.15) {
+    const np = Math.floor(intensity * 80 * (state.mouseDown ? 3 : 1));
+    for(let i=0;i<np;i++){
+      ctx.fillStyle = filter==='matrix'
+        ? `rgba(0,${Math.floor(Math.random()*255)},0,${Math.random()*.5})`
+        : `rgba(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.random()*.4})`;
+      ctx.fillRect(Math.random()*W, Math.random()*H, Math.random()*3, Math.random()*3);
+    }
+  }
+
+  // HUD text bottom
+  ctx.font = '10px monospace';
+  ctx.fillStyle = 'rgba(150,150,200,0.5)';
+  ctx.textAlign = 'center';
+  const pokeName = document.getElementById('poke-name').textContent;
+  ctx.fillText(`${pokeName} · ${filter} · ${Math.round(intensity*100)}% · zoom ${parseFloat(document.getElementById('sl-zoom').value).toFixed(1)}×`, W/2, H-14);
+
+  // Crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(state.mouseX,0); ctx.lineTo(state.mouseX,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,state.mouseY); ctx.lineTo(W,state.mouseY); ctx.stroke();
+
+  // Loop for glitch (needs animation)
+  if(filter==='glitch' || filter==='matrix') {
+    state.animId = requestAnimationFrame(drawFrame);
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+// ── Events ───────────────────────────────────────────────────────────
+document.getElementById('canvas-area').addEventListener('mousemove', e => {
+  state.mouseX = e.offsetX; state.mouseY = e.offsetY;
+  if(state.imgEl && state.filter !== 'glitch' && state.filter !== 'matrix') redraw();
+});
+document.getElementById('canvas-area').addEventListener('mousedown', () => { state.mouseDown=true; });
+document.getElementById('canvas-area').addEventListener('mouseup',   () => { state.mouseDown=false; });
+document.getElementById('poke-input').addEventListener('keydown', e => { if(e.key==='Enter') loadPokemon(); });
+window.addEventListener('resize', () => { if(state.imgEl) redraw(); });
+
+// ── Auto-load ────────────────────────────────────────────────────────
+window.addEventListener('load', () => setTimeout(loadPokemon, 200));
+</script>
+</body>
+</html>

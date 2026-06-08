@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard 1 – Terra em Tempo Real</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#060610;--surface:#0e0e1c;--border:#1a1a2e;
+    --accent:#7c3aed;--cyan:#06b6d4;--warm:#f59e0b;
+    --text:#e0e0f0;--muted:#6060a0;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:#060610cc;backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:.75rem 2rem;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .nav-brand{font-weight:800;font-size:1rem;letter-spacing:-.02em}
+  .nav-brand span{color:var(--accent)}
+  .nav-back{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem}
+  .nav-back:hover{color:var(--text)}
+  .nav-tag{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--cyan);background:#06b6d415;border:1px solid #06b6d430;border-radius:999px;padding:.2rem .7rem}
+
+  main{padding-top:60px;display:grid;grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;min-height:100vh;gap:0}
+  @media(max-width:800px){main{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}}
+
+  aside{
+    grid-row:1/-1;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    padding:2rem 1.5rem;
+    display:flex;flex-direction:column;gap:1.5rem;
+    overflow-y:auto;
+  }
+
+  .panel-title{font-size:1.3rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  .panel-sub{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:.4rem;line-height:1.6}
+
+  .sep{height:1px;background:var(--border)}
+
+  .data-group h3{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem}
+
+  .metric{display:flex;justify-content:space-between;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--border)}
+  .metric:last-child{border-bottom:none}
+  .metric-label{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted)}
+  .metric-value{font-family:'Space Mono',monospace;font-size:.95rem;font-weight:700}
+  .metric-value.hot{color:#f97316}
+  .metric-value.cool{color:var(--cyan)}
+  .metric-value.green{color:#22c55e}
+  .metric-value.amber{color:var(--warm)}
+
+  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:.4rem;animation:pulse 2s infinite}
+  .status-dot.live{background:#22c55e}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .loading-msg{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);text-align:center;padding:1rem;animation:fade 1s infinite alternate}
+  @keyframes fade{from{opacity:.4}to{opacity:1}}
+
+  .legend{display:flex;flex-direction:column;gap:.5rem}
+  .legend-item{display:flex;align-items:center;gap:.6rem;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted)}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+  canvas#p5-canvas{display:block}
+  #sketch-wrap{grid-row:1/-1;position:relative;overflow:hidden}
+  #sketch-wrap>canvas{position:absolute;inset:0}
+
+  .corner-label{
+    position:absolute;bottom:1.5rem;right:1.5rem;z-index:10;
+    font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);
+    background:#060610cc;border:1px solid var(--border);
+    padding:.5rem .9rem;border-radius:8px;line-height:1.8;
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">My<span>Dash</span>boards</div>
+  <div class="nav-tag">Dashboard 1 · Informativo</div>
+  <a href="index.html" class="nav-back">← voltar</a>
+</nav>
+
+<main>
+  <aside>
+    <div>
+      <div class="panel-title">Terra em<br>Tempo Real</div>
+      <div class="panel-sub">// dados meteorológicos + posição da ISS em composição generativa</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="data-group" id="weather-group">
+      <h3><span class="status-dot live"></span>Meteorologia</h3>
+      <div id="weather-data"><div class="loading-msg">A carregar dados meteorológicos...</div></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="data-group" id="iss-group">
+      <h3><span class="status-dot live"></span>Estação ISS</h3>
+      <div id="iss-data"><div class="loading-msg">A carregar posição da ISS...</div></div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="data-group">
+      <h3>Legenda Visual</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Temperatura → tamanho das partículas</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>Humidade → cor do anel orbital</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Velocidade vento → rotação</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>ISS → posição no canvas</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="data-group">
+      <h3>APIs utilizadas</h3>
+      <div class="legend">
+        <div class="legend-item" style="flex-direction:column;align-items:flex-start;gap:.2rem">
+          <span style="color:var(--text)">Open-Meteo</span>
+          <span>api.open-meteo.com · gratuita · sem chave</span>
+        </div>
+        <div class="legend-item" style="flex-direction:column;align-items:flex-start;gap:.2rem;margin-top:.5rem">
+          <span style="color:var(--text)">Open-Notify</span>
+          <span>api.open-notify.org · gratuita · sem chave</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="sketch-wrap">
+    <div class="corner-label" id="corner-info">
+      lat: 41.15 · lon: -8.61<br>
+      ISS: a carregar...
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Global state shared with p5 ──────────────────────────────────────
+window.dashData = {
+  temp: 18,
+  humidity: 65,
+  windspeed: 10,
+  winddir: 0,
+  weathercode: 0,
+  issLat: 0,
+  issLon: 0,
+  loaded: false
+};
+
+// ── Fetch Open-Meteo (Porto coords) ──────────────────────────────────
+async function fetchWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=41.15&longitude=-8.61&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code&timezone=Europe/Lisbon';
+    const res = await fetch(url);
+    const json = await res.json();
+    const c = json.current;
+    window.dashData.temp = c.temperature_2m;
+    window.dashData.humidity = c.relative_humidity_2m;
+    window.dashData.windspeed = c.wind_speed_10m;
+    window.dashData.winddir = c.wind_direction_10m;
+    window.dashData.weathercode = c.weather_code;
+
+    const wDescMap = {0:'Céu limpo',1:'Maioritariamente limpo',2:'Parcialmente nublado',3:'Nublado',45:'Nevoeiro',48:'Nevoeiro glaciar',51:'Chuviscos leves',61:'Chuva leve',71:'Neve leve',80:'Aguaceiros leves',95:'Trovoada'};
+    const wDesc = wDescMap[c.weather_code] || `Código ${c.weather_code}`;
+    const tempClass = c.temperature_2m > 25 ? 'hot' : c.temperature_2m < 10 ? 'cool' : 'green';
+
+    document.getElementById('weather-data').innerHTML = `
+      <div class="metric"><span class="metric-label">Temperatura</span><span class="metric-value ${tempClass}">${c.temperature_2m.toFixed(1)} °C</span></div>
+      <div class="metric"><span class="metric-label">Humidade</span><span class="metric-value cool">${c.relative_humidity_2m}%</span></div>
+      <div class="metric"><span class="metric-label">Vento</span><span class="metric-value amber">${c.wind_speed_10m.toFixed(1)} km/h</span></div>
+      <div class="metric"><span class="metric-label">Direção</span><span class="metric-value">${c.wind_direction_10m}°</span></div>
+      <div class="metric"><span class="metric-label">Condição</span><span class="metric-value" style="font-size:.7rem">${wDesc}</span></div>
+      <div class="metric"><span class="metric-label">Localização</span><span class="metric-value" style="font-size:.7rem">Porto, PT</span></div>
+    `;
+  } catch(e) {
+    document.getElementById('weather-data').innerHTML = '<div class="loading-msg">Erro ao carregar.</div>';
+  }
+}
+
+// ── Fetch ISS position ────────────────────────────────────────────────
+async function fetchISS() {
+  try {
+    const res = await fetch('https://api.open-notify.org/iss-now.json');
+    const json = await res.json();
+    const lat = parseFloat(json.iss_position.latitude);
+    const lon = parseFloat(json.iss_position.longitude);
+    window.dashData.issLat = lat;
+    window.dashData.issLon = lon;
+    window.dashData.loaded = true;
+
+    document.getElementById('iss-data').innerHTML = `
+      <div class="metric"><span class="metric-label">Latitude</span><span class="metric-value green">${lat.toFixed(2)}°</span></div>
+      <div class="metric"><span class="metric-label">Longitude</span><span class="metric-value green">${lon.toFixed(2)}°</span></div>
+      <div class="metric"><span class="metric-label">Altitude</span><span class="metric-value amber">~408 km</span></div>
+      <div class="metric"><span class="metric-label">Velocidade</span><span class="metric-value">27,600 km/h</span></div>
+      <div class="metric"><span class="metric-label">Período orbital</span><span class="metric-value">~92 min</span></div>
+    `;
+
+    document.getElementById('corner-info').innerHTML =
+      `lat: 41.15 · lon: -8.61<br>ISS: ${lat.toFixed(2)}° / ${lon.toFixed(2)}°`;
+  } catch(e) {
+    document.getElementById('iss-data').innerHTML = '<div class="loading-msg">Erro ao carregar.</div>';
+  }
+}
+
+fetchWeather();
+fetchISS();
+setInterval(fetchISS, 5000);
+setInterval(fetchWeather, 60000);
+
+// ── p5.js sketch ─────────────────────────────────────────────────────
+new p5(function(p) {
+  let particles = [];
+  let angle = 0;
+  let issX, issY;
+  let orbitAngle = 0;
+
+  p.setup = function() {
+    const wrap = document.getElementById('sketch-wrap');
+    const cnv = p.createCanvas(wrap.offsetWidth, wrap.offsetHeight);
+    cnv.parent('sketch-wrap');
+    cnv.style('position','absolute');
+    cnv.style('top','0');
+    cnv.style('left','0');
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+
+    for(let i = 0; i < 180; i++) {
+      particles.push({
+        x: p.random(p.width),
+        y: p.random(p.height),
+        vx: p.random(-0.4, 0.4),
+        vy: p.random(-0.4, 0.4),
+        size: p.random(2, 6),
+        hue: p.random(260, 300),
+        alpha: p.random(40, 80),
+        life: p.random(p.TWO_PI)
+      });
+    }
+  };
+
+  p.windowResized = function() {
+    const wrap = document.getElementById('sketch-wrap');
+    p.resizeCanvas(wrap.offsetWidth, wrap.offsetHeight);
+  };
+
+  p.draw = function() {
+    const d = window.dashData;
+    const temp = d.temp;
+    const humidity = d.humidity;
+    const wind = d.windspeed;
+    const winddir = d.winddir;
+
+    // Map data to visuals
+    const tempNorm = p.map(p.constrain(temp, -10, 45), -10, 45, 0, 1);
+    const humNorm = p.map(p.constrain(humidity, 0, 100), 0, 100, 0, 1);
+    const windNorm = p.map(p.constrain(wind, 0, 80), 0, 80, 0, 1);
+
+    const bgH = p.map(tempNorm, 0, 1, 240, 20);
+    p.background(bgH, 30, 5, 25);
+
+    // Draw connections between nearby particles
+    p.strokeWeight(0.3);
+    for(let i = 0; i < particles.length; i++) {
+      for(let j = i + 1; j < particles.length; j++) {
+        const d2 = p.dist(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+        if(d2 < 80) {
+          const alpha = p.map(d2, 0, 80, 20, 0);
+          p.stroke(270, 60, 80, alpha);
+          p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+        }
+      }
+    }
+
+    // Update & draw particles
+    const particleSize = p.map(tempNorm, 0, 1, 2, 9);
+    const speed = p.map(windNorm, 0, 1, 0.2, 1.5);
+    const windRad = p.radians(winddir);
+
+    for(let pt of particles) {
+      pt.life += 0.015;
+      pt.x += pt.vx * speed + Math.cos(windRad) * windNorm * 0.3;
+      pt.y += pt.vy * speed + Math.sin(windRad) * windNorm * 0.3;
+
+      if(pt.x < 0) pt.x = p.width;
+      if(pt.x > p.width) pt.x = 0;
+      if(pt.y < 0) pt.y = p.height;
+      if(pt.y > p.height) pt.y = 0;
+
+      const size = particleSize + Math.sin(pt.life) * 1.5;
+      const hue = p.map(tempNorm, 0, 1, 200, 30);
+      p.noStroke();
+      p.fill(hue, 70, 90, pt.alpha);
+      p.ellipse(pt.x, pt.y, size);
+    }
+
+    // Central earth-like circle
+    const cx = p.width * 0.5;
+    const cy = p.height * 0.5;
+    const earthR = p.map(tempNorm, 0, 1, 80, 130);
+
+    // Outer glow rings
+    for(let r = earthR + 40; r > earthR; r -= 8) {
+      const a = p.map(r, earthR, earthR + 40, 30, 0);
+      p.noFill();
+      p.stroke(200, 80, 90, a);
+      p.strokeWeight(1);
+      p.ellipse(cx, cy, r * 2);
+    }
+
+    // Earth body
+    p.noStroke();
+    p.fill(p.map(tempNorm, 0, 1, 200, 30), 60, p.map(tempNorm, 0, 1, 70, 60), 90);
+    p.ellipse(cx, cy, earthR * 2);
+
+    // Humidity ring
+    const humH = p.map(humNorm, 0, 1, 30, 200);
+    p.noFill();
+    p.strokeWeight(3);
+    p.stroke(humH, 80, 90, 70);
+    p.ellipse(cx, cy, earthR * 2.4);
+
+    // Wind direction indicator
+    const windLen = p.map(windNorm, 0, 1, 20, 70);
+    p.strokeWeight(2);
+    p.stroke(45, 90, 100, 80);
+    for(let i = 0; i < 3; i++) {
+      const a = windRad + i * p.TWO_PI / 3 + angle;
+      const sx = cx + Math.cos(a) * (earthR + 20);
+      const sy = cy + Math.sin(a) * (earthR + 20);
+      const ex = sx + Math.cos(a) * windLen;
+      const ey = sy + Math.sin(a) * windLen;
+      p.line(sx, sy, ex, ey);
+      // arrowhead
+      p.push();
+      p.translate(ex, ey);
+      p.rotate(a);
+      p.fill(45, 90, 100, 80);
+      p.noStroke();
+      p.triangle(0, -4, -8, 4, 8, 4);
+      p.pop();
+    }
+
+    angle += windNorm * 0.008;
+
+    // ISS orbit + marker
+    if(d.loaded) {
+      orbitAngle += 0.004;
+      const orbitR = earthR * 1.8;
+
+      // orbit path
+      p.noFill();
+      p.strokeWeight(1);
+      p.stroke(140, 70, 80, 40);
+      p.ellipse(cx, cy, orbitR * 2, orbitR * 1.1);
+
+      // ISS dot
+      const issX2 = cx + Math.cos(orbitAngle) * orbitR;
+      const issY2 = cy + Math.sin(orbitAngle) * (orbitR * 0.55);
+
+      // ISS glow
+      for(let r = 18; r > 2; r -= 4) {
+        p.fill(140, 70, 90, p.map(r, 2, 18, 60, 0));
+        p.noStroke();
+        p.ellipse(issX2, issY2, r);
+      }
+
+      // ISS body
+      p.fill(140, 60, 95, 95);
+      p.noStroke();
+      p.ellipse(issX2, issY2, 8);
+
+      // ISS label
+      p.fill(140, 40, 95, 80);
+      p.noStroke();
+      p.textFont('monospace');
+      p.textSize(10);
+      p.textAlign(p.LEFT);
+      p.text('ISS', issX2 + 8, issY2 + 4);
+    }
+
+    // Compass rose (small, top-right)
+    const roseX = p.width - 60;
+    const roseY = 60;
+    p.push();
+    p.translate(roseX, roseY);
+    ['N','E','S','O'].forEach((dir, i) => {
+      const a = i * p.HALF_PI - p.HALF_PI;
+      p.fill(0, 0, 80, 60);
+      p.noStroke();
+      p.textFont('monospace');
+      p.textSize(9);
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text(dir, Math.cos(a) * 22, Math.sin(a) * 22);
+    });
+    // wind needle
+    p.stroke(45, 90, 100, 90);
+    p.strokeWeight(2);
+    p.line(0, 0, Math.cos(windRad - p.HALF_PI) * 16, Math.sin(windRad - p.HALF_PI) * 16);
+    p.fill(45, 90, 100, 90);
+    p.noStroke();
+    p.ellipse(0, 0, 5);
+    p.pop();
+
+    // Temp label
+    p.fill(0, 0, 90, 80);
+    p.noStroke();
+    p.textFont('monospace');
+    p.textSize(11);
+    p.textAlign(p.CENTER);
+    p.text(`${temp.toFixed(1)}°C · ${humidity}% hum · ${wind.toFixed(0)} km/h`, cx, cy + earthR + 55);
+  };
+});
+</script>
+</body>
+</html>
