@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shapes & Geometry</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0d0d0d;
+      --accent: #e8ff47;
+      --text: #f0f0f0;
+      --muted: #444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 3rem;
+    }
+
+    nav {
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--accent); }
+
+    nav .sep { color: var(--muted); font-size: 0.7rem; }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      letter-spacing: 0.04em;
+      line-height: 0.95;
+      margin-bottom: 0.4rem;
+    }
+
+    h1 em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 4rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+      gap: 12px;
+    }
+
+    .rect {
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s;
+    }
+
+    .rect-label {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      font-family: 'DM Sans', sans-serif;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    /* ── grid placements & base colours ── */
+    .r1 {
+      grid-column: 1 / 6;
+      height: 220px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #252510 100%);
+      border: 1px solid #2a2a1a;
+    }
+
+    .r2 {
+      grid-column: 6 / 13;
+      height: 220px;
+      background: var(--accent);
+    }
+    .r2 .rect-label { color: #0a0a0a; opacity: 0.4; }
+
+    .r3 {
+      grid-column: 1 / 4;
+      height: 160px;
+      background: #1a1a1a;
+      border: 1px solid #252525;
+    }
+
+    .r4 {
+      grid-column: 4 / 8;
+      height: 160px;
+      background: linear-gradient(160deg, #1f1f1f, #141414);
+      border: 1px solid #232323;
+    }
+
+    .r5 {
+      grid-column: 8 / 13;
+      height: 160px;
+      background: #c8e820;
+    }
+    .r5 .rect-label { color: #0a0a0a; opacity: 0.4; }
+
+    .r6 {
+      grid-column: 1 / 7;
+      height: 130px;
+      border: 1px solid var(--accent);
+      background: transparent;
+    }
+
+    .r7 {
+      grid-column: 7 / 10;
+      height: 130px;
+      background: #1c1c0e;
+      border: 1px solid #2d2d12;
+    }
+
+    .r8 {
+      grid-column: 10 / 13;
+      height: 130px;
+      background: #e8ff47;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+    }
+    .r8 .rect-label { color: #0a0a0a; opacity: 0.4; }
+
+    .r9 {
+      grid-column: 1 / 3;
+      height: 100px;
+      background: var(--accent);
+    }
+    .r9 .rect-label { color: #0a0a0a; opacity: 0.4; }
+
+    .r10 {
+      grid-column: 3 / 9;
+      height: 100px;
+      background: #111;
+      border: 1px solid #222;
+    }
+
+    .r11 {
+      grid-column: 9 / 13;
+      height: 100px;
+      background: #1a1a0a;
+      border: 1px solid #2a2a10;
+    }
+
+    /* ── FORM 01 — pulso ao clicar ── */
+    .r1::after {
+      content: '';
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 60px; height: 60px;
+      border: 1px solid rgba(232,255,71,0.2);
+      transition: transform 0.4s, opacity 0.4s;
+    }
+    .r1::before {
+      content: '';
+      position: absolute;
+      top: 35px; right: 35px;
+      width: 30px; height: 30px;
+      background: rgba(232,255,71,0.06);
+    }
+    .r1.pulse {
+      animation: pulse-anim 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes pulse-anim {
+      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(232,255,71,0.4); }
+      40%  { transform: scale(0.93); }
+      70%  { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(232,255,71,0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232,255,71,0); }
+    }
+
+    /* ── FORM 02 — ripple ao clicar ── */
+    .r2-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.18);
+      transform: scale(0);
+      pointer-events: none;
+      animation: ripple-anim 0.65s ease-out forwards;
+    }
+    @keyframes ripple-anim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ── FORM 03 — encolhe ao hover ── */
+    .r3:hover {
+      transform: scale(0.88);
+      box-shadow: 0 0 0 2px rgba(232,255,71,0.3);
+    }
+
+    /* ── FORM 04 — losango roda ── */
+    .r4::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%) rotate(45deg);
+      width: 50px; height: 50px;
+      border: 1px solid rgba(255,255,255,0.07);
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1), border-color 0.4s;
+    }
+    .r4:hover::after {
+      transform: translate(-50%,-50%) rotate(225deg);
+      border-color: rgba(232,255,71,0.4);
+    }
+
+    /* ── FORM 05 — linhas surgem ao hover ── */
+    .r5-lines {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .r5:hover .r5-lines { opacity: 1; }
+    .r5-line {
+      position: absolute;
+      height: 1px;
+      background: rgba(0,0,0,0.15);
+      left: 0; right: 0;
+    }
+
+    /* ── FORM 06 — texto aparece ao hover ── */
+    .r6-text {
+      position: absolute;
+      left: 1.2rem; top: 50%;
+      transform: translateY(-50%) translateX(-8px);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 0.35s, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+    .r6:hover .r6-text {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    /* ── FORM 07 — barra desliza ao hover ── */
+    .r7-bar {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 4px;
+      width: 0;
+      background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .r7:hover .r7-bar { width: 100%; }
+
+    /* ── FORM 08 — inverte cores ao clicar ── */
+    .r8 {
+      transition: background 0.5s, clip-path 0.5s;
+    }
+    .r8.inverted {
+      background: #1a1a1a;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+    }
+    .r8.inverted .rect-label { color: var(--accent); opacity: 0.6; }
+
+    /* ── FORM 09 — brilho passa ao hover ── */
+    .r9-shine {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.38) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+    .r9:hover .r9-shine { transform: translateX(120%); }
+
+    /* ── FORM 10 — borda acende ao hover ── */
+    .r10 {
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    .r10:hover {
+      border-color: rgba(232,255,71,0.6);
+      box-shadow: inset 0 0 30px rgba(232,255,71,0.04);
+    }
+    .r10::before {
+      content: '';
+      position: absolute;
+      left: 1.5rem; top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 1px;
+      background: linear-gradient(to right, rgba(232,255,71,0.6), transparent);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .r10:hover::before { width: 140px; }
+
+    /* ── FORM 11 — grelha aparece ao hover ── */
+    .r11-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      position: absolute;
+      inset: 14px;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .r11:hover .r11-grid { opacity: 1; }
+    .r11-cell {
+      background: rgba(232,255,71,0.12);
+      border-radius: 2px;
+    }
+
+    /* ── fade in inicial ── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rect { animation: fadeIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+    .r1 { animation-delay: 0.05s; }
+    .r2 { animation-delay: 0.1s; }
+    .r3 { animation-delay: 0.15s; }
+    .r4 { animation-delay: 0.2s; }
+    .r5 { animation-delay: 0.25s; }
+    .r6 { animation-delay: 0.3s; }
+    .r7 { animation-delay: 0.35s; }
+    .r8 { animation-delay: 0.4s; }
+    .r9 { animation-delay: 0.45s; }
+    .r10 { animation-delay: 0.5s; }
+    .r11 { animation-delay: 0.55s; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html">← Voltar</a>
+    <a href="../index.html">← Portal</a>
+    <span class="sep">/</span>
+    <a href="#">Section 01</a>
+  </nav>
+
+  <h1>Shapes &amp; <em>Geometry</em></h1>
+  <p class="subtitle">A study in rectangular form</p>
+
+  <div class="grid">
+
+    <!-- Form 01 — pulso ao clicar -->
+    <div class="rect r1" id="r1">
+      <span class="rect-label">Form 01</span>
+    </div>
+
+    <!-- Form 02 — ripple ao clicar -->
+    <div class="rect r2" id="r2">
+      <span class="rect-label">Form 02</span>
+    </div>
+
+    <!-- Form 03 — encolhe ao hover (CSS puro) -->
+    <div class="rect r3">
+      <span class="rect-label">Form 03</span>
+    </div>
+
+    <!-- Form 04 — losango roda ao hover (CSS puro) -->
+    <div class="rect r4">
+      <span class="rect-label">Form 04</span>
+    </div>
+
+    <!-- Form 05 — linhas surgem ao hover -->
+    <div class="rect r5">
+      <div class="r5-lines" id="r5lines"></div>
+      <span class="rect-label">Form 05</span>
+    </div>
+
+    <!-- Form 06 — texto surge ao hover (CSS puro) -->
+    <div class="rect r6">
+      <div class="r6-text">GEOMETRY</div>
+      <span class="rect-label">Form 06</span>
+    </div>
+
+    <!-- Form 07 — barra desliza ao hover (CSS puro) -->
+    <div class="rect r7">
+      <div class="r7-bar"></div>
+      <span class="rect-label">Form 07</span>
+    </div>
+
+    <!-- Form 08 — inverte cores ao clicar -->
+    <div class="rect r8" id="r8">
+      <span class="rect-label">Form 08</span>
+    </div>
+
+    <!-- Form 09 — brilho ao hover (CSS puro) -->
+    <div class="rect r9">
+      <div class="r9-shine"></div>
+      <span class="rect-label">Form 09</span>
+    </div>
+
+    <!-- Form 10 — borda acende ao hover (CSS puro) -->
+    <div class="rect r10">
+      <span class="rect-label">Form 10</span>
+    </div>
+
+    <!-- Form 11 — grelha aparece ao hover -->
+    <div class="rect r11">
+      <div class="r11-grid" id="r11grid"></div>
+      <span class="rect-label">Form 11</span>
+    </div>
+
+  </div>
+
+  <script>
+    // Form 05 — gera linhas horizontais
+    const r5lines = document.getElementById('r5lines');
+    for (let i = 0; i < 9; i++) {
+      const line = document.createElement('div');
+      line.className = 'r5-line';
+      line.style.top = (10 + i * 12) + 'px';
+      r5lines.appendChild(line);
+    }
+
+    // Form 11 — gera células da grelha
+    const r11grid = document.getElementById('r11grid');
+    for (let i = 0; i < 12; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'r11-cell';
+      r11grid.appendChild(cell);
+    }
+
+    // Form 01 — pulso ao clicar
+    const r1 = document.getElementById('r1');
+    r1.addEventListener('click', () => {
+      r1.classList.remove('pulse');
+      void r1.offsetWidth; // reflow para reiniciar animação
+      r1.classList.add('pulse');
+    });
+    r1.addEventListener('animationend', () => r1.classList.remove('pulse'));
+
+    // Form 02 — ripple ao clicar
+    document.getElementById('r2').addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ripple = document.createElement('div');
+      ripple.className = 'r2-ripple';
+      const size = Math.max(rect.width, rect.height) * 2;
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${x - size / 2}px;top:${y - size / 2}px;`;
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
+
+    // Form 08 — inverte cores ao clicar
+    const r8 = document.getElementById('r8');
+    let r8inverted = false;
+    r8.addEventListener('click', () => {
+      r8inverted = !r8inverted;
+      r8.classList.toggle('inverted', r8inverted);
+    });
+  </script>
+
+</body>
+</html>

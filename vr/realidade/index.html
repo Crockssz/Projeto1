@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Projeto B – Núcleo de Dados (AR)</title>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+<style>
+  html, body { margin:0; overflow:hidden; font-family:monospace; background:#000; }
+
+  /* ---------- GUI Overlay (intro) ---------- */
+  #intro-overlay{
+    position:fixed; inset:0; z-index:1000;
+    background:radial-gradient(ellipse at center, #0a0a0f 0%, #000 100%);
+    display:flex; align-items:center; justify-content:center;
+    padding:1.5rem;
+  }
+  #intro-card{
+    max-width:480px; width:100%;
+    background:rgba(10,10,15,.85);
+    border:1px solid #333;
+    border-radius:12px;
+    padding:2rem 1.75rem;
+    color:#fff;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 40px rgba(245,158,11,.08);
+  }
+  #intro-card h1{
+    margin:0 0 .25rem;
+    font-size:1.1rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#f59e0b;
+  }
+  #intro-card .subtitle{
+    color:#888; font-size:.7rem; letter-spacing:.08em; margin-bottom:1.25rem;
+  }
+  #intro-card p{
+    font-size:.85rem; line-height:1.6; color:#ccc; margin:0 0 1rem;
+  }
+  #intro-card .marker-box{
+    display:flex; align-items:center; gap:1rem;
+    background:#111; border:1px solid #2a2a2a; border-radius:8px;
+    padding:.75rem; margin-bottom:1.25rem;
+  }
+  #intro-card .marker-box img{
+    width:64px; height:64px; border-radius:4px; border:1px solid #444;
+  }
+  #intro-card .marker-box .marker-text{
+    font-size:.7rem; color:#999; line-height:1.5;
+  }
+  #intro-card .marker-box .marker-text a{
+    color:#06b6d4; text-decoration:none;
+  }
+  #intro-card .steps{
+    font-size:.72rem; color:#999; line-height:1.7; margin-bottom:1.5rem;
+    border-left:2px solid #22c55e; padding-left:.75rem;
+  }
+  #start-btn{
+    width:100%; padding:.85rem; border:none; border-radius:8px;
+    background:#f59e0b; color:#0a0a0f; font-family:monospace;
+    font-size:.85rem; letter-spacing:.08em; text-transform:uppercase;
+    font-weight:bold; cursor:pointer; transition:background .2s, transform .1s;
+  }
+  #start-btn:hover{ background:#fcd34d; }
+  #start-btn:active{ transform:scale(.98); }
+
+  /* ---------- HUD pós-início ---------- */
+  #hud{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(0,0,0,.6); backdrop-filter:blur(6px);
+    padding:.85rem 1.25rem; display:flex; justify-content:space-between; align-items:center;
+    border-bottom:1px solid #333; color:#fff; font-size:.7rem; letter-spacing:.08em;
+    display:none;
+  }
+  #hud a{ color:#f59e0b; text-decoration:none; }
+  #hud .hud-status{ color:#888; }
+  #hud .hud-status.found{ color:#22c55e; }
+
+  .a-enter-vr{ display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============ GUI OVERLAY (obrigatório: só desaparece ao clicar Começar) ============ -->
+<div id="intro-overlay">
+  <div id="intro-card">
+    <h1>Núcleo de Dados</h1>
+    <div class="subtitle">Projeto B · Realidade Aumentada</div>
+
+    <p>
+      Um fragmento do "Espaço Digital" materializa-se no teu espaço físico.
+      Esta experiência explora a fronteira entre o mundo real e o sintético —
+      um núcleo de informação que orbita e pulsa de forma autónoma, como se
+      respirasse dados.
+    </p>
+
+    <div class="marker-box">
+      <img src="marker-pattern.png" alt="Marcador AR personalizado"/>
+      <div class="marker-text">
+        Imprime ou mostra este marcador no ecrã de outro dispositivo.<br/>
+        Ficheiro: <span style="color:#06b6d4">marker-pattern.png</span>
+      </div>
+    </div>
+
+    <div class="steps">
+      1. Permite o acesso à câmara quando pedido.<br/>
+      2. Aponta a câmara para o marcador acima.<br/>
+      3. Mantém o marcador bem iluminado e visível no enquadramento.<br/>
+      4. O núcleo aparecerá a orbitar e a pulsar sobre o marcador.
+    </div>
+
+    <button id="start-btn">Começar</button>
+  </div>
+</div>
+
+<!-- ============ HUD (visível depois de "Começar") ============ -->
+<div id="hud">
+  <div>
+    <div style="text-transform:uppercase">Núcleo de Dados · AR</div>
+    <div class="hud-status" id="hud-status">À procura do marcador…</div>
+  </div>
+  <a href="../index4.html">← Voltar</a>
+</div>
+
+<!-- ============ CENA AR ============ -->
+<a-scene
+  id="ar-scene"
+  embedded
+  vr-mode-ui="enabled:false"
+  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+
+  <a-assets></a-assets>
+
+  <a-marker
+    id="marker"
+    type="pattern"
+    url="marker-pattern.patt"
+    emitevents="true"
+    smooth="true"
+    smoothCount="10"
+    smoothTolerance=".01"
+    smoothThreshold="5">
+
+    <!-- Núcleo: octaedro com órbita + flutuação calculadas via tick(), e mutação de material -->
+    <a-entity
+      id="nucleo"
+      geometry="primitive:octahedron;radius:0.35"
+      material="color:#06b6d4;emissive:#06b6d4;emissiveIntensity:0.6;metalness:0.3;roughness:0.4"
+      position="0 0.6 0"
+      orbit-float="radius:0.25;orbitSpeed:0.8;floatSpeed:1.4;floatHeight:0.15;spinSpeed:40"
+      pulse-material="colors:#06b6d4,#f59e0b,#22c55e;speed:0.6">
+    </a-entity>
+
+    <!-- Anel de base decorativo, estático, para ancorar visualmente o núcleo ao marcador -->
+    <a-entity
+      geometry="primitive:ring;radiusInner:0.5;radiusOuter:0.55"
+      material="color:#f59e0b;opacity:0.5;transparent:true;side:double"
+      rotation="-90 0 0"
+      position="0 0.02 0">
+    </a-entity>
+
+    <a-text
+      value="ESPAÇO DIGITAL"
+      align="center"
+      color="#fff"
+      scale="0.6 0.6 0.6"
+      position="0 1.15 0">
+    </a-text>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+
+</a-scene>
+
+<script>
+// =========================================================
+// Componente 1: orbit-float
+// Movimento cinemático 100% calculado em código (sem <a-animation>).
+// Combina: órbita circular (sin/cos) + flutuação vertical (sin) + rotação própria.
+// =========================================================
+AFRAME.registerComponent('orbit-float', {
+  schema: {
+    radius:      { type: 'number', default: 0.25 },
+    orbitSpeed:  { type: 'number', default: 0.8 },   // radianos/seg
+    floatSpeed:  { type: 'number', default: 1.4 },    // rad/seg para o seno vertical
+    floatHeight: { type: 'number', default: 0.15 },   // amplitude da flutuação
+    spinSpeed:   { type: 'number', default: 40 }      // graus/seg de rotação própria
+  },
+
+  init: function () {
+    this.baseY = this.el.object3D.position.y;
+    this.angle = 0;
+  },
+
+  tick: function (time, deltaTime) {
+    const dt = deltaTime / 1000; // segundos
+    const data = this.data;
+
+    this.angle += data.orbitSpeed * dt;
+
+    const x = Math.cos(this.angle) * data.radius;
+    const z = Math.sin(this.angle) * data.radius;
+    const y = this.baseY + Math.sin(time / 1000 * data.floatSpeed) * data.floatHeight;
+
+    this.el.object3D.position.set(x, y, z);
+
+    // rotação própria contínua nos 3 eixos, a ritmos diferentes
+    this.el.object3D.rotation.y += AFRAME.utils.degToRad(data.spinSpeed) * dt;
+    this.el.object3D.rotation.x += AFRAME.utils.degToRad(data.spinSpeed * 0.4) * dt;
+  }
+});
+
+// =========================================================
+// Componente 2: pulse-material  (conceito "force-red")
+// Altera dinamicamente cor, emissive e opacidade do material
+// já carregado, com transições suaves entre uma lista de cores.
+// =========================================================
+AFRAME.registerComponent('pulse-material', {
+  schema: {
+    colors: { type: 'array', default: ['#06b6d4', '#f59e0b', '#22c55e'] },
+    speed:  { type: 'number', default: 0.6 }
+  },
+
+  init: function () {
+    this.colorObjs = this.data.colors.map(c => new THREE.Color(c));
+    this.t = 0;
+  },
+
+  tick: function (time, deltaTime) {
+    this.t += (deltaTime / 1000) * this.data.speed;
+
+    const n = this.colorObjs.length;
+    const idx = Math.floor(this.t) % n;
+    const nextIdx = (idx + 1) % n;
+    const localT = this.t % 1; // progresso de interpolação 0..1
+
+    const c1 = this.colorObjs[idx];
+    const c2 = this.colorObjs[nextIdx];
+
+    const mixed = c1.clone().lerp(c2, localT);
+
+    const mesh = this.el.getObject3D('mesh');
+    if (mesh && mesh.material) {
+      mesh.material.color.copy(mixed);
+      if (mesh.material.emissive) {
+        mesh.material.emissive.copy(mixed);
+      }
+      // opacidade a "respirar" entre 0.6 e 1.0
+      mesh.material.opacity = 0.8 + Math.sin(time / 1000 * 2) * 0.2;
+      mesh.material.transparent = true;
+      mesh.material.emissiveIntensity = 0.5 + Math.sin(time / 1000 * 3) * 0.3;
+      mesh.material.needsUpdate = true;
+    }
+  }
+});
+
+// =========================================================
+// Lógica da GUI Overlay + deteção do marcador
+// =========================================================
+document.getElementById('start-btn').addEventListener('click', () => {
+  document.getElementById('intro-overlay').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const markerEl = document.getElementById('marker');
+  const status = document.getElementById('hud-status');
+
+  markerEl.addEventListener('markerFound', () => {
+    status.textContent = 'Marcador detetado';
+    status.classList.add('found');
+  });
+
+  markerEl.addEventListener('markerLost', () => {
+    status.textContent = 'À procura do marcador…';
+    status.classList.remove('found');
+  });
+});
+</script>
+
+</body>
+</html>

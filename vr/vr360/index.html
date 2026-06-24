@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Projeto 4 – VR 360 Avançado</title>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<style>
+  body{margin:0;overflow:hidden;font-family:monospace}
+  #ui{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+    padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid #333;color:#fff;font-size:.75rem;letter-spacing:.1em;
+  }
+  #ui a{color:#f59e0b;text-decoration:none;transition:color .2s}
+  #ui a:hover{color:#fcd34d}
+  .ui-title{text-transform:uppercase}
+  .ui-info{color:#888;font-size:.7rem;margin-top:.3rem}
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <div>
+    <div class="ui-title">VR 360 Avançado</div>
+    <div class="ui-info">Olha para os hotspots • Use gaze-tracking</div>
+  </div>
+  <a href="../index4.html">← Voltar</a>
+</div>
+
+<a-scene environment="preset:default" vr-mode-ui="enabled:true">
+
+  <!-- Assets: aqui ficam as imagens de cada cena, pré-carregadas -->
+  <a-assets>
+    <img id="img-space"  src="../../public/sky.png" crossorigin="anonymous">
+    <img id="img-ocean"  src="../../public/Ocean.png" crossorigin="anonymous">
+    <img id="img-forest" src="../../public/forest.png" crossorigin="anonymous">
+  </a-assets>
+
+  <!-- Câmara com cursor -->
+  <a-camera wasd-controls look-controls>
+    <a-cursor
+      color="#f59e0b"
+      scale="0.5 0.5 0.5"
+      geometry="primitive:ring;radiusInner:0.02;radiusOuter:0.04"
+      animation="property:scale;from:0.5 0.5 0.5;to:0.8 0.8 0.8;dur:300;easing:easeInCubic"
+      raycaster="far:300;objects:[data-hotspot]">
+    </a-cursor>
+  </a-camera>
+
+  <!-- Sky: a sua imagem muda em JS quando trocamos de cena -->
+  <a-sky id="sky" src="#img-space"></a-sky>
+
+  <!-- Cena 1: Espaço Digital (default) -->
+  <a-entity id="scene-1" visible="true">
+    <a-entity
+      data-hotspot
+      position="3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#06b6d4;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200;easing:easeInCubic"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="2">
+      <a-text
+        value="Oceano"
+        align="center"
+        color="#fff"
+        scale="1.5 1.5 1.5"
+        position="0 0.5 0">
+      </a-text>
+    </a-entity>
+
+    <a-entity
+      data-hotspot
+      position="-3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#22c55e;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200;easing:easeInCubic"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="3">
+      <a-text
+        value="Floresta"
+        align="center"
+        color="#fff"
+        scale="1.5 1.5 1.5"
+        position="0 0.5 0">
+      </a-text>
+    </a-entity>
+
+    <a-text
+      value="Espaço Digital"
+      align="center"
+      color="#f59e0b"
+      scale="3 3 3"
+      position="0 2 -5"
+      animation="property:rotation;from:0 0 0;to:0 360 0;dur:20000;easing:linear;loop:true">
+    </a-text>
+  </a-entity>
+
+  <!-- Cena 2: Oceano -->
+  <a-entity id="scene-2" visible="false">
+    <a-entity
+      data-hotspot
+      position="3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#f59e0b;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="1">
+      <a-text value="Voltar" align="center" color="#fff" scale="1.5 1.5 1.5" position="0 0.5 0"></a-text>
+    </a-entity>
+
+    <a-entity
+      data-hotspot
+      position="-3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#22c55e;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="3">
+      <a-text value="Floresta" align="center" color="#fff" scale="1.5 1.5 1.5" position="0 0.5 0"></a-text>
+    </a-entity>
+
+    <a-text value="Oceano Digital" align="center" color="#06b6d4" scale="3 3 3" position="0 2 -5"></a-text>
+  </a-entity>
+
+  <!-- Cena 3: Floresta -->
+  <a-entity id="scene-3" visible="false">
+    <a-entity
+      data-hotspot
+      position="3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#f59e0b;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="1">
+      <a-text value="Voltar" align="center" color="#fff" scale="1.5 1.5 1.5" position="0 0.5 0"></a-text>
+    </a-entity>
+
+    <a-entity
+      data-hotspot
+      position="-3 1.5 -3"
+      geometry="primitive:cylinder;radius:0.4;height:0.8"
+      material="color:#06b6d4;transparent:true;opacity:0.7"
+      animation__hover="property:scale;to:1.3 1.3 1.3;dur:200"
+      animation__reset="property:scale;to:1 1 1;dur:200;startEvents:mouseleave"
+      cursor-listener
+      data-scene="2">
+      <a-text value="Oceano" align="center" color="#fff" scale="1.5 1.5 1.5" position="0 0.5 0"></a-text>
+    </a-entity>
+
+    <a-text value="Floresta Futura" align="center" color="#22c55e" scale="3 3 3" position="0 2 -5"></a-text>
+  </a-entity>
+
+</a-scene>
+
+<script>
+// Mapa: número da cena -> id da imagem nos <a-assets>
+const sceneImages = {
+  1: '#img-space',
+  2: '#img-ocean',
+  3: '#img-forest'
+};
+
+// Componente customizado para os hotspots
+AFRAME.registerComponent('cursor-listener', {
+  init: function() {
+    const el = this.el;
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const sceneNum = parseInt(el.getAttribute('data-scene'));
+      switchScene(sceneNum);
+    });
+  }
+});
+
+// Troca de cena
+function switchScene(sceneNum) {
+  document.getElementById('scene-1').setAttribute('visible', sceneNum === 1);
+  document.getElementById('scene-2').setAttribute('visible', sceneNum === 2);
+  document.getElementById('scene-3').setAttribute('visible', sceneNum === 3);
+
+  // Troca a imagem do sky para a da cena escolhida
+  document.getElementById('sky').setAttribute('src', sceneImages[sceneNum]);
+
+  console.log('Scene:', sceneNum);
+}
+</script>
+
+</body>
+</html>

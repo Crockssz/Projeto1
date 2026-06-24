@@ -1,42 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Projects</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MyDashboards – ISTEC</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;
+    --accent1:#7c3aed;--accent2:#06b6d4;--text:#f0f0f8;--muted:#7070a0;
+  }
+  html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow-x:hidden}
+  canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 2rem}
 
-    body {
-      background: #ffffff;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      font-family: 'DM Mono', monospace;
-    }
+  header{padding:5rem 0 3rem;text-align:center}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.2em;color:var(--accent2);text-transform:uppercase;margin-bottom:1.2rem}
+  h1{font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin-bottom:1.5rem}
+  h1 span{color:var(--accent1)}
+  .subtitle{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.7}
 
-    a {
-      display: inline-block;
-      padding: 14px 32px;
-      border: 1.5px solid #000;
-      color: #000;
-      text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      transition: background 0.2s, color 0.2s;
-    }
+  .divider{width:100%;height:1px;background:var(--border);margin:3rem 0}
 
-    a:hover {
-      background: #000;
-      color: #fff;
-    }
-  </style>
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;padding-bottom:6rem}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:2.5rem 2rem;text-decoration:none;color:var(--text);display:block;
+    position:relative;overflow:hidden;transition:border-color .25s,transform .25s;
+  }
+  .card::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 80% 20%, var(--card-glow,#7c3aed22) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  .card:hover{border-color:var(--card-accent,var(--accent1));transform:translateY(-4px)}
+  .card.p2{--card-glow:#06b6d422;--card-accent:var(--accent2)}
+  .card.p3{--card-glow:#22c55e22;--card-accent:#22c55e}
+  .card.p4{--card-glow:#f59e0b22;--card-accent:#f59e0b}
+
+  .badge{
+    display:inline-block;font-family:'Space Mono',monospace;font-size:.65rem;
+    letter-spacing:.12em;text-transform:uppercase;padding:.3rem .8rem;
+    border-radius:999px;border:1px solid;margin-bottom:1.5rem;
+  }
+  .badge.v{color:var(--accent1);border-color:var(--accent1)}
+  .badge.i{color:var(--accent2);border-color:var(--accent2)}
+  .badge.p3{color:#22c55e;border-color:#22c55e}
+  .badge.p4{color:#f59e0b;border-color:#f59e0b}
+
+  .card h2{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.7rem;line-height:1.2}
+  .card p{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:2rem}
+
+  .cta{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--card-accent,var(--accent1));display:flex;align-items:center;gap:.5rem;letter-spacing:.05em}
+  .cta::after{content:'↗';font-size:1rem}
+
+  footer{border-top:1px solid var(--border);padding:2rem 0;text-align:center;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted)}
+</style>
 </head>
 <body>
-  <a href="./index3.html">Projeto 1</a>
-  <a href="./index2.html">Projeto 3</a>
+<canvas id="bg"></canvas>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">ISTEC · Design de Interação</div>
+    <h1>My<span>Dash</span>boards</h1>
+    <p class="subtitle">// Quatro projetos · Múltiplas experiências</p>
+  </header>
+
+  <div class="divider"></div>
+
+  <div class="cards">
+
+    <a href="/Projeto1/index3.html" class="card p2">
+      <div class="badge i">Projeto 1</div>
+      <h2>Portais</h2>
+      <p>Experiências visuais com geometria, cores e animações interativas</p>
+      <div class="cta">Explorar</div>
+    </a>
+
+    <a href="/Projeto2/index2.html" class="card p1">
+      <div class="badge v">Projeto 3</div>
+      <h2>Dashboards</h2>
+      <p>Visualizações de dados em tempo real com APIs públicas e p5.js</p>
+      <div class="cta">Explorar</div>
+    </a>
+
+    <a href="vr/index4.html" class="card p3">
+      <div class="badge p3">Projeto 4</div>
+      <h2>Imersivas</h2>
+      <p>Realidade virtual 360º e realidade aumentada com marcadores</p>
+      <div class="cta">Explorar</div>
+    </a>
+
+    <a href="index5.html" class="card p4">
+      <div class="badge p4">Projeto 5</div>
+      <h2>WebXR</h2>
+      <p>Experiências imersivas na web com VR e AR avançados</p>
+      <div class="cta">Explorar</div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">MyDashboards · ISTEC 2024/25</div>
+</footer>
+
+<script>
+const canvas=document.getElementById('bg');
+const ctx=canvas.getContext('2d');
+let W,H,pts=[];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;pts=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3}))}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,1.5,0,Math.PI*2);
+    ctx.fillStyle='#ffffff18';ctx.fill();
+  });
+  pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+    ctx.strokeStyle=`rgba(124,58,237,${.18*(1-d/120)})`;ctx.lineWidth=.5;ctx.stroke();}
+  }));
+  requestAnimationFrame(draw);
+}
+resize();draw();
+window.addEventListener('resize',resize);
+</script>
 </body>
 </html>
