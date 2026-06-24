@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Editor de Imagem Divertido</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+    color: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    margin: 10px 0 20px;
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  #upload-area {
+    margin-bottom: 20px;
+  }
+  #upload-area input[type="file"] {
+    display: none;
+  }
+  #upload-label {
+    background: #6c63ff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  #upload-label:hover {
+    background: #554ee0;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1100px;
+  }
+  #canvas-wrapper {
+    background: #111;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 300px;
+    min-height: 300px;
+    flex: 1 1 400px;
+  }
+  canvas {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+  }
+  #controls {
+    background: #29293f;
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1 1 280px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  input[type="range"] {
+    width: 100%;
+  }
+  .buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  button {
+    background: #44415a;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+    flex: 1 1 auto;
+  }
+  button:hover {
+    background: #6c63ff;
+  }
+  #reset-btn {
+    background: #b94a48;
+  }
+  #reset-btn:hover {
+    background: #d65c5a;
+  }
+  #download-btn {
+    background: #2e9e6b;
+  }
+  #download-btn:hover {
+    background: #3cc285;
+  }
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin-top: 6px;
+    margin-bottom: -4px;
+    color: #b9b6ff;
+  }
+  #placeholder-text {
+    color: #777;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎨 Editor de Imagem Divertido</h1>
+
+<div id="upload-area">
+  <label id="upload-label" for="file-input">📁 Escolher Imagem</label>
+  <input type="file" id="file-input" accept="image/*">
+</div>
+
+<div class="container">
+  <div id="canvas-wrapper">
+    <p id="placeholder-text">Nenhuma imagem carregada ainda...</p>
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+  <div id="controls">
+    <div class="section-title">Ajustes de cor</div>
+
+    <div class="slider-group">
+      <label>Brilho <span id="brightness-val">100%</span></label>
+      <input type="range" id="brightness" min="0" max="200" value="100">
+    </div>
+
+    <div class="slider-group">
+      <label>Saturação <span id="saturate-val">100%</span></label>
+      <input type="range" id="saturate" min="0" max="300" value="100">
+    </div>
+
+    <div class="slider-group">
+      <label>Contraste <span id="contrast-val">100%</span></label>
+      <input type="range" id="contrast" min="0" max="200" value="100">
+    </div>
+
+    <div class="slider-group">
+      <label>Tonalidade (Hue) <span id="hue-val">0°</span></label>
+      <input type="range" id="hue" min="0" max="360" value="0">
+    </div>
+
+    <div class="slider-group">
+      <label>Desfoque <span id="blur-val">0px</span></label>
+      <input type="range" id="blur" min="0" max="20" value="0">
+    </div>
+
+    <div class="slider-group">
+      <label>Pixelização <span id="pixelate-val">0</span></label>
+      <input type="range" id="pixelate" min="0" max="50" value="0">
+    </div>
+
+    <div class="section-title">Efeitos rápidos</div>
+    <div class="buttons-row">
+      <button id="grayscale-btn">Preto e Branco</button>
+      <button id="invert-btn">Inverter Cores</button>
+      <button id="sepia-btn">Sépia</button>
+      <button id="mirror-btn">Espelhar</button>
+      <button id="rotate-btn">Rotar 90°</button>
+    </div>
+
+    <div class="buttons-row">
+      <button id="reset-btn">🔄 Repor Tudo</button>
+      <button id="download-btn">⬇️ Descarregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const fileInput = document.getElementById('file-input');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const placeholderText = document.getElementById('placeholder-text');
+
+let originalImage = null; // imagem original carregada (sempre intacta)
+let rotation = 0;
+let mirrored = false;
+let sepiaOn = false;
+let grayscaleOn = false;
+let invertOn = false;
+
+const sliders = {
+  brightness: document.getElementById('brightness'),
+  saturate: document.getElementById('saturate'),
+  contrast: document.getElementById('contrast'),
+  hue: document.getElementById('hue'),
+  blur: document.getElementById('blur'),
+  pixelate: document.getElementById('pixelate'),
+};
+
+const valLabels = {
+  brightness: document.getElementById('brightness-val'),
+  saturate: document.getElementById('saturate-val'),
+  contrast: document.getElementById('contrast-val'),
+  hue: document.getElementById('hue-val'),
+  blur: document.getElementById('blur-val'),
+  pixelate: document.getElementById('pixelate-val'),
+};
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      originalImage = img;
+      resetAll(false);
+      placeholderText.style.display = 'none';
+      canvas.style.display = 'block';
+      drawImage();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Atualizar labels e redesenhar ao mover sliders
+Object.keys(sliders).forEach(key => {
+  sliders[key].addEventListener('input', () => {
+    updateLabels();
+    drawImage();
+  });
+});
+
+function updateLabels() {
+  valLabels.brightness.textContent = sliders.brightness.value + '%';
+  valLabels.saturate.textContent = sliders.saturate.value + '%';
+  valLabels.contrast.textContent = sliders.contrast.value + '%';
+  valLabels.hue.textContent = sliders.hue.value + '°';
+  valLabels.blur.textContent = sliders.blur.value + 'px';
+  valLabels.pixelate.textContent = sliders.pixelate.value;
+}
+
+document.getElementById('grayscale-btn').addEventListener('click', () => {
+  grayscaleOn = !grayscaleOn;
+  drawImage();
+});
+document.getElementById('invert-btn').addEventListener('click', () => {
+  invertOn = !invertOn;
+  drawImage();
+});
+document.getElementById('sepia-btn').addEventListener('click', () => {
+  sepiaOn = !sepiaOn;
+  drawImage();
+});
+document.getElementById('mirror-btn').addEventListener('click', () => {
+  mirrored = !mirrored;
+  drawImage();
+});
+document.getElementById('rotate-btn').addEventListener('click', () => {
+  rotation = (rotation + 90) % 360;
+  drawImage();
+});
+document.getElementById('reset-btn').addEventListener('click', () => resetAll(true));
+document.getElementById('download-btn').addEventListener('click', downloadImage);
+
+function resetAll(redraw) {
+  sliders.brightness.value = 100;
+  sliders.saturate.value = 100;
+  sliders.contrast.value = 100;
+  sliders.hue.value = 0;
+  sliders.blur.value = 0;
+  sliders.pixelate.value = 0;
+  rotation = 0;
+  mirrored = false;
+  sepiaOn = false;
+  grayscaleOn = false;
+  invertOn = false;
+  updateLabels();
+  if (redraw) drawImage();
+}
+
+function buildFilterString() {
+  let filters = [];
+  filters.push(`brightness(${sliders.brightness.value}%)`);
+  filters.push(`saturate(${sliders.saturate.value}%)`);
+  filters.push(`contrast(${sliders.contrast.value}%)`);
+  filters.push(`hue-rotate(${sliders.hue.value}deg)`);
+  filters.push(`blur(${sliders.blur.value}px)`);
+  if (grayscaleOn) filters.push('grayscale(100%)');
+  if (invertOn) filters.push('invert(100%)');
+  if (sepiaOn) filters.push('sepia(100%)');
+  return filters.join(' ');
+}
+
+function drawImage() {
+  if (!originalImage) return;
+
+  const w = originalImage.width;
+  const h = originalImage.height;
+
+  // Ajustar tamanho do canvas conforme rotação
+  if (rotation === 90 || rotation === 270) {
+    canvas.width = h;
+    canvas.height = w;
+  } else {
+    canvas.width = w;
+    canvas.height = h;
+  }
+
+  ctx.save();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.filter = buildFilterString();
+
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rotation * Math.PI / 180);
+  if (mirrored) ctx.scale(-1, 1);
+  ctx.drawImage(originalImage, -w / 2, -h / 2, w, h);
+  ctx.restore();
+
+  // Pixelização (aplicada depois dos filtros, redesenhando em baixa resolução)
+  const pixelSize = parseInt(sliders.pixelate.value);
+  if (pixelSize > 0) {
+    applyPixelation(pixelSize);
+  }
+}
+
+function applyPixelation(size) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const scale = Math.max(1, size);
+
+  // canvas temporário pequeno
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+  const smallW = Math.max(1, Math.floor(w / scale));
+  const smallH = Math.max(1, Math.floor(h / scale));
+  tempCanvas.width = smallW;
+  tempCanvas.height = smallH;
+
+  tempCtx.imageSmoothingEnabled = false;
+  tempCtx.drawImage(canvas, 0, 0, smallW, smallH);
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(tempCanvas, 0, 0, smallW, smallH, 0, 0, w, h);
+}
+
+function downloadImage() {
+  if (!originalImage) {
+    alert('Carrega primeiro uma imagem!');
+    return;
+  }
+  const link = document.createElement('a');
+  link.download = 'imagem-editada.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+
+</body>
+</html>
