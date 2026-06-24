@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Projeto B – Núcleo de Dados (AR)</title>
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 <style>
   html, body { margin:0; overflow:hidden; font-family:monospace; background:#000; }
 
@@ -79,6 +79,13 @@
   #hud .hud-status.found{ color:#22c55e; }
 
   .a-enter-vr{ display:none !important; }
+
+  #error-panel{
+    position:fixed; bottom:0; left:0; right:0; z-index:2000;
+    background:rgba(180,0,0,.92); color:#fff; font-size:.65rem;
+    padding:.75rem 1rem; max-height:40vh; overflow:auto;
+    white-space:pre-wrap; display:none; font-family:monospace;
+  }
 </style>
 </head>
 <body>
@@ -195,20 +202,24 @@ AFRAME.registerComponent('orbit-float', {
   },
 
   tick: function (time, deltaTime) {
-    const dt = deltaTime / 1000; // segundos
-    const data = this.data;
+    try {
+      const dt = deltaTime / 1000; // segundos
+      const data = this.data;
 
-    this.angle += data.orbitSpeed * dt;
+      this.angle += data.orbitSpeed * dt;
 
-    const x = Math.cos(this.angle) * data.radius;
-    const z = Math.sin(this.angle) * data.radius;
-    const y = this.baseY + Math.sin(time / 1000 * data.floatSpeed) * data.floatHeight;
+      const x = Math.cos(this.angle) * data.radius;
+      const z = Math.sin(this.angle) * data.radius;
+      const y = this.baseY + Math.sin(time / 1000 * data.floatSpeed) * data.floatHeight;
 
-    this.el.object3D.position.set(x, y, z);
+      this.el.object3D.position.set(x, y, z);
 
-    // rotação própria contínua nos 3 eixos, a ritmos diferentes
-    this.el.object3D.rotation.y += AFRAME.utils.degToRad(data.spinSpeed) * dt;
-    this.el.object3D.rotation.x += AFRAME.utils.degToRad(data.spinSpeed * 0.4) * dt;
+      // rotação própria contínua nos 3 eixos, a ritmos diferentes
+      this.el.object3D.rotation.y += AFRAME.utils.degToRad(data.spinSpeed) * dt;
+      this.el.object3D.rotation.x += AFRAME.utils.degToRad(data.spinSpeed * 0.4) * dt;
+    } catch (err) {
+      console.warn('orbit-float tick error:', err);
+    }
   }
 });
 
@@ -224,34 +235,39 @@ AFRAME.registerComponent('pulse-material', {
   },
 
   init: function () {
+    const THREE = AFRAME.THREE;
     this.colorObjs = this.data.colors.map(c => new THREE.Color(c));
     this.t = 0;
   },
 
   tick: function (time, deltaTime) {
-    this.t += (deltaTime / 1000) * this.data.speed;
+    try {
+      this.t += (deltaTime / 1000) * this.data.speed;
 
-    const n = this.colorObjs.length;
-    const idx = Math.floor(this.t) % n;
-    const nextIdx = (idx + 1) % n;
-    const localT = this.t % 1; // progresso de interpolação 0..1
+      const n = this.colorObjs.length;
+      const idx = Math.floor(this.t) % n;
+      const nextIdx = (idx + 1) % n;
+      const localT = this.t % 1; // progresso de interpolação 0..1
 
-    const c1 = this.colorObjs[idx];
-    const c2 = this.colorObjs[nextIdx];
+      const c1 = this.colorObjs[idx];
+      const c2 = this.colorObjs[nextIdx];
 
-    const mixed = c1.clone().lerp(c2, localT);
+      const mixed = c1.clone().lerp(c2, localT);
 
-    const mesh = this.el.getObject3D('mesh');
-    if (mesh && mesh.material) {
-      mesh.material.color.copy(mixed);
-      if (mesh.material.emissive) {
-        mesh.material.emissive.copy(mixed);
+      const mesh = this.el.getObject3D('mesh');
+      if (mesh && mesh.material) {
+        mesh.material.color.copy(mixed);
+        if (mesh.material.emissive) {
+          mesh.material.emissive.copy(mixed);
+        }
+        // opacidade a "respirar" entre 0.6 e 1.0
+        mesh.material.opacity = 0.8 + Math.sin(time / 1000 * 2) * 0.2;
+        mesh.material.transparent = true;
+        mesh.material.emissiveIntensity = 0.5 + Math.sin(time / 1000 * 3) * 0.3;
+        mesh.material.needsUpdate = true;
       }
-      // opacidade a "respirar" entre 0.6 e 1.0
-      mesh.material.opacity = 0.8 + Math.sin(time / 1000 * 2) * 0.2;
-      mesh.material.transparent = true;
-      mesh.material.emissiveIntensity = 0.5 + Math.sin(time / 1000 * 3) * 0.3;
-      mesh.material.needsUpdate = true;
+    } catch (err) {
+      console.warn('pulse-material tick error:', err);
     }
   }
 });
